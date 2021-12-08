@@ -18,7 +18,7 @@ def drop_dublicates(input_path, input_filenames, output_path, output_filenames, 
         data.to_excel(output_path + out_filename, index=False)
 
 def concatenate_tables(data_path, filenames, concat_filename):
-    for fname in filenames[1:]:
+    for fname in filenames:
         concatenated_df = pd.read_excel(data_path + concat_filename)
         cur_df =  pd.read_excel(data_path + fname)
 
