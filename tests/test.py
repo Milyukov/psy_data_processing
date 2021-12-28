@@ -1,5 +1,6 @@
 import unittest
 from utils.tables import *
+import math
 
 class TestTableUtils(unittest.TestCase):
 
@@ -60,17 +61,22 @@ class TestTableUtils(unittest.TestCase):
         data_frame = pd.read_excel(self.output_path + self.output_filenames[0])
         self.assertEqual(data_frame.shape[1], 9)
 
-        data1 = np.array(
-            [
+        data1 = [
                 self.line1 + [1.0, 2.0, 3.0],
                 self.line3 + [np.nan, np.nan, np.nan],
                 self.line2 + [np.nan, np.nan, np.nan]
             ]
-        )
+
         data_frame_1 = pd.DataFrame(data=data1, columns=
         ['Фамилия', 'Имя', 'Отчество', 'col1', 'col2', 'col3', 'col4', 'col5', 'col6'])
 
-        self.assertTrue(data_frame.values, data_frame_1.values)
+        for row, row_ref in zip(data_frame.values, data_frame_1.values):
+            for val, val_ref in zip(row, row_ref):
+                print(val)
+                print(val_ref)
+                if pd.isna(val) and pd.isna(val_ref):
+                    continue
+                self.assertEqual(val, val_ref)
 
 if __name__ == '__main__':
     unittest.main()
