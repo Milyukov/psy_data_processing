@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import os
 
 def drop_dublicates(input_path, input_filenames, output_path, output_filenames, sheetnumbers=None):
     assert len(input_filenames) == len(output_filenames)
@@ -10,12 +11,25 @@ def drop_dublicates(input_path, input_filenames, output_path, output_filenames, 
         assert len(sheetnumbers) == len(input_filenames)
 
     for in_filename, out_filename, sheetnumber in zip(input_filenames, output_filenames, sheetnumbers):
-        # xl = pd.ExcelFile(data_path + "EDEQ_final3.xlsx")
-        # assert len(xl.sheet_names) == 1
-
-        data = pd.read_excel(input_path + in_filename, sheet_name=sheetnumber)
+        data = pd.read_excel(os.path.join(input_path, in_filename), sheet_name=sheetnumber)
         data = data.drop_duplicates()
-        data.to_excel(output_path + out_filename, index=False)
+        data.to_excel(os.path.join(output_path, out_filename), index=False)
+
+def drop_dublicates_by_cols(cols, input_path, input_filenames, output_path, output_filenames, sheetnumbers=None):
+    assert len(input_filenames) == len(output_filenames)
+
+    if sheetnumbers is None:
+        sheetnumbers = [0] * len(input_filenames)
+    else:
+        assert len(sheetnumbers) == len(input_filenames)
+
+    for in_filename, out_filename, sheetnumber in zip(input_filenames, output_filenames, sheetnumbers):
+        data = pd.read_excel(os.path.join(input_path, in_filename), sheet_name=sheetnumber)
+        duplicated_data = data[data.duplicated(subset=cols, keep=False)]
+        data = data.drop_duplicates(subset=cols)
+        data.to_excel(os.path.join(output_path, out_filename), index=False)
+        duplicated_path = '{}/{}_duplicates.{}'.format(output_path, *out_filename.split('.'))
+        duplicated_data.to_excel(duplicated_path, index=False)
 
 def concatenate_tables(data_path, filenames, concat_filename):
     for fname in filenames:

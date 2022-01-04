@@ -9,11 +9,13 @@ class TestTableUtils(unittest.TestCase):
         self.output_path = '/tmp/'
         self.input_filenames = ['test_drop_dublicates_1.xlsx', 'test_drop_dublicates_2.xlsx']
         self.output_filenames = ['test_drop_dublicates_1_2.xlsx', 'test_drop_dublicates_2_2.xlsx']
-        self.true_answers = [3, 1]
+        self.true_answers = [4, 1]
+        self.true_answers_2 = [3, 1]
 
         self.line1 = ['Мков', 'Глб', 'Сргч', 1, 2, 3]
         self.line2 = ['Атджва', 'Юл', 'Фкмрдн', 1, 2, 3]
         self.line3 = ['Суслва', 'Елн', 'Брсвн', 1, 2, 3]
+        self.line4 = ['Суслва', 'Елн', 'Брсвн', 4, 5, 6]
 
         data_arrays = []
 
@@ -25,7 +27,7 @@ class TestTableUtils(unittest.TestCase):
                     self.line1,
                     self.line2,
                     self.line2,
-                    self.line3
+                    self.line4
                 ]
             )
         )
@@ -54,6 +56,12 @@ class TestTableUtils(unittest.TestCase):
         for index, fname in enumerate(self.output_filenames):
             data_frame = pd.read_excel(self.output_path + fname)
             self.assertEqual(data_frame.shape[0], self.true_answers[index])
+
+        drop_dublicates_by_cols(['Фамилия', 'Имя', 'Отчество'], self.input_path, self.input_filenames, self.output_path, self.output_filenames)
+
+        for index, fname in enumerate(self.output_filenames):
+            data_frame = pd.read_excel(self.output_path + fname)
+            self.assertEqual(data_frame.shape[0], self.true_answers_2[index])
 
     def test_concatenate_tables(self):
         drop_dublicates(self.input_path, self.input_filenames, self.output_path, self.output_filenames)
