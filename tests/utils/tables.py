@@ -2,6 +2,20 @@ import pandas as pd
 import numpy as np
 import os
 
+def prepare_data_frame(filename, sheet_name=None):
+    df = pd.read_excel(filename, sheet_name=sheet_name)
+    df.columns = df.columns.str.lower()
+    df = df.applymap(lambda x: x.lower() if isinstance(x, str) else x)
+    return df
+
+def replace_answers(table_df, answers_dict):
+    df = table_df.replace(answers_dict)
+    return df
+
+def replace_questions(table_df, questions_dict):
+    df = table_df.rename(columns=questions_dict)
+    return df
+
 def drop_dublicates(input_path, input_filenames, output_path, output_filenames, sheetnumbers=None):
     assert len(input_filenames) == len(output_filenames)
 

@@ -25,9 +25,11 @@ if __name__ == '__main__':
     # concatenate_tables('./', output_filenames[1:], "concatenated.xlsx")
 
     drop_dublicates_by_cols(
-        ['фамилия', 'имя', 'отчество'], 
+        ['Фамилия', 'Имя', 'Отчество'], 
         data_path, 
-        ['EDEQ_FINAL_DATA.xlsx'], 
+        ['DEBQ.xlsx'], 
         '.', 
-        ['EDEQ_FINAL_DATA_processed.xlsx'], 
-        [1])
+        ['DEBQ_processed.xlsx'], 
+        [0])
+
+    concatenate_tables('./', ['/DEBQ_processed.xlsx'], "EDEQ_SEPARATED.xlsx")
