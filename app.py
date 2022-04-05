@@ -1,5 +1,30 @@
 import tests.utils.tables as utils
 import pandas as pd
+import numpy as np
+
+# EDEQ
+edeq_start_col = 7
+edeq_count = 33
+
+# DASS
+dass_start_col = edeq_start_col + edeq_count #41
+dass_count = 21
+
+# IES
+ies_start_col = dass_start_col + dass_count #63
+ies_count = 23
+
+# DEBQ
+debq_start_col = ies_start_col + ies_count #89
+debq_count = 33
+
+# NVM
+nvm_start_col = debq_start_col + debq_count #123
+nvm_count = 83
+
+# DERS
+ders_start_col = nvm_start_col + nvm_count #208
+ders_count = 18
 
 def calc_edeq(data, edeq_res):
     edeq_res['Опросник питания (EDEQ)'] = ''
@@ -24,8 +49,12 @@ def calc_edeq(data, edeq_res):
         cols[i] = col.lower()
     edeq_res['Беспокойство о весе'] = data[cols].mean(axis=1)
 
-    cols = ['edeq_{}'.format(i) for i in range(1, edeq_count + 1)]
-    edeq_res['1_Общий балл'] = data[cols].mean(axis=1)
+    cols = ['EDEQ_1', 'EDEQ_2', 'EDEQ_3', 'EDEQ_4', 'EDEQ_5', 'EDEQ_6', 'EDEQ_7', 'EDEQ_8', 
+    'EDEQ_9', 'EDEQ_10', 'EDEQ_11', 'EDEQ_12', 'EDEQ_19', 'EDEQ_20', 'EDEQ_21', 'EDEQ_22', 
+    'EDEQ_23', 'EDEQ_24', 'EDEQ_25', 'EDEQ_26', 'EDEQ_27', 'EDEQ_28']
+    for i, col in enumerate(cols):
+        cols[i] = col.lower()
+    edeq_res['EDEQ_Общий балл'] = data[cols].mean(axis=1)
 
 def calc_dass(data, dass_res):
     dass_res['Шкала депрессии, тревоги и стресса (DASS-21)'] = ''
@@ -44,9 +73,6 @@ def calc_dass(data, dass_res):
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     dass_res['Стресс'] = 2 * data[cols].sum(axis=1)
-
-    cols = ['dass_{}'.format(i) for i in range(1, dass_count + 1)]
-    dass_res['2_Общий балл'] = 2 * data[cols].sum(axis=1)
 
 def calc_ies(data, res):
     res['Шкала интуитивного питания  (IES-23)'] = ''
@@ -72,7 +98,7 @@ def calc_ies(data, res):
     res['Конгруэнтность "Тело/Выбор еды"'] = data[cols].mean(axis=1)
 
     cols = ['ies_{}'.format(i) for i in range(1, ies_count + 1)]
-    res['3_Общий балл'] = data[cols].mean(axis=1)
+    res['IES_Общий балл'] = data[cols].mean(axis=1)
 
 def calc_debq(data, res):
     res['Опросник стиля пищевого поведения / Голладский пищевой опросник (DEBQ)'] = ''
@@ -91,10 +117,6 @@ def calc_debq(data, res):
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     res['Экстернальный'] = data[cols].mean(axis=1)
-
-    cols = ['debq_{}'.format(i) for i in range(1, debq_count + 1)]
-    res['4_Общий балл'] = data[cols].mean(axis=1)
-
 
 def calc_nvm(data, res):
     res['NVM - Нидерландский личностный опросник'] = ''
@@ -169,34 +191,10 @@ def calc_ders(data, res):
     res['Стратегии'] = data[cols].sum(axis=1)
 
     cols = ['ders_{}'.format(i) for i in range(1, ders_count + 1)]
-    res['5_Общий балл'] = data[cols].mean(axis=1)
+    res['DERS_Общий балл'] = data[cols].sum(axis=1)
 
 if __name__ == '__main__':
-    # EDEQ
-    edeq_start_col = 7
-    edeq_count = 33
-
-    # DASS
-    dass_start_col = edeq_start_col + edeq_count #41
-    dass_count = 21
-
-    # IES
-    ies_start_col = dass_start_col + dass_count #63
-    ies_count = 23
-
-    # DEBQ
-    debq_start_col = ies_start_col + ies_count #89
-    debq_count = 33
-
-    # NVM
-    nvm_start_col = debq_start_col + debq_count #123
-    nvm_count = 83
-    
-    # DERS
-    ders_start_col = nvm_start_col + nvm_count #208
-    ders_count = 18
-    
-    filename = '/home/gleb/Projects/tables/data/input.xlsx'
+    filename = '/home/gleb/Projects/tables/data/интуит_проверка.xlsx'
 
     data = utils.prepare_data_frame(filename, sheet_name=0) #'сырые данные и правила'
     cols = data.columns.values
@@ -225,27 +223,29 @@ if __name__ == '__main__':
     data = data[question_cols]
 
     # generate new question names
-    replace_questions_dict = {}
+    questions_to_codes = {}
+    codes_to_questions = {}
 
     for number, q in enumerate(edeq_questions):
-        replace_questions_dict[q] = 'edeq_{}'.format(number + 1)
+        questions_to_codes[q] = 'edeq_{}'.format(number + 1)
+        codes_to_questions['edeq_{}'.format(number + 1)] = q
 
     for number, q in enumerate(dass_questions):
-        replace_questions_dict[q] = 'dass_{}'.format(number + 1)
+        questions_to_codes[q] = 'dass_{}'.format(number + 1)
 
     for number, q in enumerate(ies_questions):
-        replace_questions_dict[q] = 'ies_{}'.format(number + 1)
+        questions_to_codes[q] = 'ies_{}'.format(number + 1)
 
     for number, q in enumerate(debq_questions):
-        replace_questions_dict[q] = 'debq_{}'.format(number + 1)
+        questions_to_codes[q] = 'debq_{}'.format(number + 1)
 
     for number, q in enumerate(nvm_questions):
-        replace_questions_dict[q] = 'nvm_{}'.format(number + 1)
+        questions_to_codes[q] = 'nvm_{}'.format(number + 1)
 
     for number, q in enumerate(ders_questions):
-        replace_questions_dict[q] = 'ders_{}'.format(number + 1)
+        questions_to_codes[q] = 'ders_{}'.format(number + 1)
 
-    data = utils.replace_questions(data, replace_questions_dict)
+    data = utils.replace_questions(data, questions_to_codes)
 
     # generate new answers names
     replace_answers_dict = {
@@ -316,6 +316,13 @@ if __name__ == '__main__':
     edeq_res = pd.DataFrame()
     calc_edeq(data, edeq_res)
 
+    cols = ['edeq_13', 'edeq_14', 'edeq_15', 'edeq_16', 'edeq_17', 'edeq_18',
+    'edeq_29', 'edeq_30', 'edeq_31', 'edeq_32', 'edeq_33']
+    for c in cols:
+        question = codes_to_questions[c]
+        question = question[0].upper() + question[1:]
+        edeq_res[codes_to_questions[c]] = data[c].apply(str)
+
     general_res = edeq_res.copy()
     calc_dass(data, general_res)
     calc_ies(data, general_res)
@@ -327,10 +334,32 @@ if __name__ == '__main__':
     general_res.set_axis(data['фио'], inplace=True)
 
     # Create a Pandas Excel writer using XlsxWriter as the engine.
-    writer = pd.ExcelWriter('/tmp/exp.xlsx')
+    writer = pd.ExcelWriter('/tmp/exp.xlsx', engine='xlsxwriter')
     data.to_excel(writer, index=False, sheet_name='replaced')
-    edeq_res.transpose().to_excel(writer, index=True, sheet_name='edeq')
-    general_res.transpose().to_excel(writer, index=True, sheet_name='general')
+    general_res = general_res.transpose()
+    general_res.to_excel(writer, index=True, sheet_name='general')
+
+    # Get the xlsxwriter workbook and worksheet objects.
+    workbook  = writer.book
+    worksheet = writer.sheets['general']
+
+    # Add some cell formats.
+    format_index = workbook.add_format()
+    format_index.set_bold(True)
+    format_index.set_align('left')
+    assert worksheet.set_column(0, 0, 50, format_index) == 0
+
+    format_values = workbook.add_format({'num_format': '0.00'})
+    format_values.set_bold(False)
+    format_values.set_align('right')
+    assert worksheet.set_column(1, len(general_res.columns), None, format_values) == 0
+
+    # row = general_res.iloc[[2]]
+    # numeric_values = row.values[:, 0]
+    # indices = np.where(np.logical_or(numeric_values<-0.24, numeric_values>1.48))[0]
+    # # Set the column width and format.
+    # for col_num in indices:
+    #     assert worksheet.set_column(col_num + 1, col_num + 1, None, format_index) == 0
 
     # Close the Pandas Excel writer and output the Excel file.
     writer.save()
