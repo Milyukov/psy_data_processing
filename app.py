@@ -1,6 +1,7 @@
 import tests.utils.tables as utils
 import pandas as pd
 import numpy as np
+import sys
 
 # EDEQ
 edeq_start_col = 7
@@ -194,7 +195,7 @@ def calc_ders(data, res):
     res['DERS_Общий балл'] = data[cols].sum(axis=1)
 
 if __name__ == '__main__':
-    filename = '/home/gleb/Projects/tables/data/интуит_проверка.xlsx'
+    filename = sys.argv[1]
 
     data = utils.prepare_data_frame(filename, sheet_name=0) #'сырые данные и правила'
     cols = data.columns.values
