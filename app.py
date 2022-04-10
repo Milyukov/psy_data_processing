@@ -67,9 +67,11 @@ def calc_dass(data, dass_res):
     min_vals = [0, 10, 14, 21, 28]
     max_vals = [9, 13, 20, 27, 10000]
     suffixes = ['Нормативно', 'Неявно выражено', 'Средне выражено', 'Явно выражено', 'Крайне тяжело']
+    locs = []
     for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
-        dass_res.loc[dass_res['Депрессия'].between(min_val, max_val), 'Депрессия'] = \
-            dass_res.loc[dass_res['Депрессия'].between(min_val, max_val), 'Депрессия'].apply(str) + " ({})".format(suffix)
+        locs.append(dass_res['Депрессия'].between(min_val, max_val))
+    for loc in locs:
+        dass_res.loc[loc, 'Депрессия'] = dass_res.loc[loc, 'Депрессия'].apply(str) + " ({})".format(suffix)
 
     cols = ['DASS_2', 'DASS_4', 'DASS_7', 'DASS_9', 'DASS_15', 'DASS_19', 'DASS_20']
     for i, col in enumerate(cols):
@@ -78,10 +80,11 @@ def calc_dass(data, dass_res):
     min_vals = [0, 8, 10, 15, 19]
     max_vals = [7, 9, 14, 20, 10000]
     suffixes = ['Нормативно', 'Неявно выражено', 'Средне выражено', 'Явно выражено', 'Крайне тяжело']
+    locs = []
     for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
-        dass_res.loc[dass_res['Тревога'].between(min_val, max_val), 'Тревога'] = \
-            dass_res.loc[dass_res['Тревога'].between(min_val, max_val), 'Тревога'].apply(str) + " ({})".format(
-                suffix)
+        locs.append(dass_res['Тревога'].between(min_val, max_val))
+    for loc in locs:
+        dass_res.loc[loc, 'Тревога'] = dass_res.loc[loc, 'Тревога'].apply(str) + " ({})".format(suffix)
 
     cols = ['DASS_1', 'DASS_6', 'DASS_8', 'DASS_11', 'DASS_12', 'DASS_14', 'DASS_18']
     for i, col in enumerate(cols):
@@ -91,10 +94,11 @@ def calc_dass(data, dass_res):
     min_vals = [0, 15, 19, 26, 34]
     max_vals = [14, 18, 25, 33, 10000]
     suffixes = ['Нормативно', 'Неявно выражено', 'Средне выражено', 'Явно выражено', 'Крайне тяжело']
+    locs = []
     for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
-        dass_res.loc[dass_res['Стресс'].between(min_val, max_val), 'Стресс'] = \
-            dass_res.loc[dass_res['Стресс'].between(min_val, max_val), 'Стресс'].apply(str) + " ({})".format(
-                suffix)
+        locs.append(dass_res['Стресс'].between(min_val, max_val))
+    for loc in locs:
+        dass_res.loc[loc, 'Стресс'] = dass_res.loc[loc, 'Стресс'].apply(str) + " ({})".format(suffix)
 
 def calc_ies(data, res):
     res['Шкала интуитивного питания  (IES-23)'] = ''
