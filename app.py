@@ -433,6 +433,7 @@ def run(filename):
     for c in cols:
         question = codes_to_questions[c]
         question = question[0].upper() + question[1:]
+        codes_to_questions[c] = question
         edeq_res[codes_to_questions[c]] = data[c].apply(str)
 
     general_res = edeq_res.copy()
