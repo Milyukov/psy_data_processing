@@ -67,9 +67,12 @@ def calc_dass(data, dass_res):
     min_vals = [0, 10, 14, 21, 28]
     max_vals = [9, 13, 20, 27, 10000]
     suffixes = ['Нормативно', 'Неявно выражено', 'Средне выражено', 'Явно выражено', 'Крайне тяжело']
+    locs = []
     for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
-        dass_res.loc[dass_res['Депрессия'].between(min_val, max_val), 'Депрессия'] = \
-            dass_res.loc[dass_res['Депрессия'].between(min_val, max_val), 'Депрессия'].apply(str) + " ({})".format(suffix)
+        locs.append(dass_res['Депрессия'].between(min_val, max_val))
+    for loc in locs:
+        if loc[0]:
+            dass_res.loc[loc, 'Депрессия'] = dass_res.loc[loc, 'Депрессия'].apply(str) + " ({})".format(suffix)
 
     cols = ['DASS_2', 'DASS_4', 'DASS_7', 'DASS_9', 'DASS_15', 'DASS_19', 'DASS_20']
     for i, col in enumerate(cols):
@@ -78,10 +81,12 @@ def calc_dass(data, dass_res):
     min_vals = [0, 8, 10, 15, 19]
     max_vals = [7, 9, 14, 20, 10000]
     suffixes = ['Нормативно', 'Неявно выражено', 'Средне выражено', 'Явно выражено', 'Крайне тяжело']
+    locs = []
     for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
-        dass_res.loc[dass_res['Тревога'].between(min_val, max_val), 'Тревога'] = \
-            dass_res.loc[dass_res['Тревога'].between(min_val, max_val), 'Тревога'].apply(str) + " ({})".format(
-                suffix)
+        locs.append(dass_res['Тревога'].between(min_val, max_val))
+    for loc in locs:
+        if loc[0]:
+            dass_res.loc[loc, 'Тревога'] = dass_res.loc[loc, 'Тревога'].apply(str) + " ({})".format(suffix)
 
     cols = ['DASS_1', 'DASS_6', 'DASS_8', 'DASS_11', 'DASS_12', 'DASS_14', 'DASS_18']
     for i, col in enumerate(cols):
@@ -91,10 +96,12 @@ def calc_dass(data, dass_res):
     min_vals = [0, 15, 19, 26, 34]
     max_vals = [14, 18, 25, 33, 10000]
     suffixes = ['Нормативно', 'Неявно выражено', 'Средне выражено', 'Явно выражено', 'Крайне тяжело']
+    locs = []
     for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
-        dass_res.loc[dass_res['Стресс'].between(min_val, max_val), 'Стресс'] = \
-            dass_res.loc[dass_res['Стресс'].between(min_val, max_val), 'Стресс'].apply(str) + " ({})".format(
-                suffix)
+        locs.append(dass_res['Стресс'].between(min_val, max_val))
+    for loc in locs:
+        if loc[0]:
+            dass_res.loc[loc, 'Стресс'] = dass_res.loc[loc, 'Стресс'].apply(str) + " ({})".format(suffix)
 
 def calc_ies(data, res):
     res['Шкала интуитивного питания  (IES-23)'] = ''
@@ -246,19 +253,19 @@ def format_edeq(worksheet, general_res, header_format, outlier_format):
 
     options['minimum'] = -0.24
     options['maximum'] = 1.48
-    worksheet.conditional_format(3, 1, 2, len(general_res.columns) - 1, options)
+    worksheet.conditional_format(3, 1, 3, len(general_res.columns) - 1, options)
 
     options['minimum'] = 0.55
     options['maximum'] = 3.75
-    worksheet.conditional_format(4, 1, 2, len(general_res.columns) - 1, options)
+    worksheet.conditional_format(4, 1, 4, len(general_res.columns) - 1, options)
 
     options['minimum'] = 0.22
     options['maximum'] = 2.96
-    worksheet.conditional_format(5, 1, 2, len(general_res.columns) - 1, options)
+    worksheet.conditional_format(5, 1, 5, len(general_res.columns) - 1, options)
 
     options['minimum'] = 0.34
     options['maximum'] = 2.77
-    worksheet.conditional_format(6, 1, 2, len(general_res.columns) - 1, options)
+    worksheet.conditional_format(6, 1, 6, len(general_res.columns) - 1, options)
 
 def format_dass(worksheet, general_res, header_format, outlier_format):
     worksheet.set_row(18, None, header_format)
@@ -274,23 +281,23 @@ def format_ies(worksheet, general_res, header_format, outlier_format):
         'maximum': 4.2,
         'format': outlier_format
     }
-    worksheet.conditional_format(23, 1, 2, len(general_res.columns) - 1, options)
+    worksheet.conditional_format(23, 1, 23, len(general_res.columns) - 1, options)
 
     options['minimum'] = 2.33
     options['maximum'] = 4.03
-    worksheet.conditional_format(24, 1, 2, len(general_res.columns) - 1, options)
+    worksheet.conditional_format(24, 1, 24, len(general_res.columns) - 1, options)
 
     options['minimum'] = 2.91
     options['maximum'] = 4.23
-    worksheet.conditional_format(25, 1, 2, len(general_res.columns) - 1, options)
+    worksheet.conditional_format(25, 1, 25, len(general_res.columns) - 1, options)
 
     options['minimum'] = 2.49
     options['maximum'] = 4.09
-    worksheet.conditional_format(26, 1, 2, len(general_res.columns) - 1, options)
+    worksheet.conditional_format(26, 1, 26, len(general_res.columns) - 1, options)
 
     options['minimum'] = 2.9
     options['maximum'] = 3.86
-    worksheet.conditional_format(27, 1, 2, len(general_res.columns) - 1, options)
+    worksheet.conditional_format(27, 1, 27, len(general_res.columns) - 1, options)
 
 def format_debq(worksheet, general_res, header_format, outlier_format):
     worksheet.set_row(28, None, header_format)
@@ -429,6 +436,7 @@ def run(filename):
     for c in cols:
         question = codes_to_questions[c]
         question = question[0].upper() + question[1:]
+        codes_to_questions[c] = question
         edeq_res[codes_to_questions[c]] = data[c].apply(str)
 
     general_res = edeq_res.copy()
@@ -469,7 +477,7 @@ def run(filename):
 
     # label outliers
     header_format = workbook.add_format({'bg_color': 'yellow'})
-    outlier_format = workbook.add_format({'bg_color': 'red', 'align': 'right'})
+    outlier_format = workbook.add_format({'bg_color': '#FAA9A5', 'align': 'right'})
     format_edeq(worksheet, general_res, header_format, outlier_format)
     format_ies(worksheet, general_res, header_format, outlier_format)
 
