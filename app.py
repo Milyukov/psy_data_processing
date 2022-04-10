@@ -303,10 +303,8 @@ def format_ders(worksheet, general_res, header_format, outlier_format):
     for row_index in range(39, 46):
         worksheet.set_row(row_index, None, outlier_format)
 
-if __name__ == '__main__':
-    filename = sys.argv[1]
-
-    data = utils.prepare_data_frame(filename, sheet_name=0) #'сырые данные и правила'
+def run(filename):
+    data = utils.prepare_data_frame(filename, sheet_name=0)
     cols = data.columns.values
 
     # get questions names
@@ -444,7 +442,7 @@ if __name__ == '__main__':
     general_res.set_axis(data['фио'], inplace=True)
 
     # Create a Pandas Excel writer using XlsxWriter as the engine.
-    writer = pd.ExcelWriter('/tmp/exp.xlsx', engine='xlsxwriter')
+    writer = pd.ExcelWriter('./result.xlsx', engine='xlsxwriter')
     data.to_excel(writer, index=False, sheet_name='replaced')
     general_res = general_res.transpose()
     general_res.reset_index(inplace=True)
@@ -487,4 +485,9 @@ if __name__ == '__main__':
     format_index.set_align('left')
     assert worksheet.set_column(0, 0, 50, format_index) == 0
 
+    # Close the Pandas Excel writer and output the Excel file.
     writer.save()
+
+if __name__ == '__main__':
+    filename = sys.argv[1]
+    run(filename)
