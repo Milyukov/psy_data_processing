@@ -64,16 +64,37 @@ def calc_dass(data, dass_res):
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     dass_res['Депрессия'] = 2 * data[cols].sum(axis=1)
+    min_vals = [0, 10, 14, 21, 28]
+    max_vals = [9, 13, 20, 27, 10000]
+    suffixes = ['Нормативно', 'Неявно выражено', 'Средне выражено', 'Явно выражено', 'Крайне тяжело']
+    for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
+        dass_res.loc[dass_res['Депрессия'].between(min_val, max_val), 'Депрессия'] = \
+            dass_res.loc[dass_res['Депрессия'].between(min_val, max_val), 'Депрессия'].apply(str) + " ({})".format(suffix)
 
     cols = ['DASS_2', 'DASS_4', 'DASS_7', 'DASS_9', 'DASS_15', 'DASS_19', 'DASS_20']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     dass_res['Тревога'] = 2 * data[cols].sum(axis=1)
+    min_vals = [0, 8, 10, 15, 19]
+    max_vals = [7, 9, 14, 20, 10000]
+    suffixes = ['Нормативно', 'Неявно выражено', 'Средне выражено', 'Явно выражено', 'Крайне тяжело']
+    for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
+        dass_res.loc[dass_res['Тревога'].between(min_val, max_val), 'Тревога'] = \
+            dass_res.loc[dass_res['Тревога'].between(min_val, max_val), 'Тревога'].apply(str) + " ({})".format(
+                suffix)
 
     cols = ['DASS_1', 'DASS_6', 'DASS_8', 'DASS_11', 'DASS_12', 'DASS_14', 'DASS_18']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     dass_res['Стресс'] = 2 * data[cols].sum(axis=1)
+
+    min_vals = [0, 15, 19, 26, 34]
+    max_vals = [14, 18, 25, 33, 10000]
+    suffixes = ['Нормативно', 'Неявно выражено', 'Средне выражено', 'Явно выражено', 'Крайне тяжело']
+    for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
+        dass_res.loc[dass_res['Стресс'].between(min_val, max_val), 'Стресс'] = \
+            dass_res.loc[dass_res['Стресс'].between(min_val, max_val), 'Стресс'].apply(str) + " ({})".format(
+                suffix)
 
 def calc_ies(data, res):
     res['Шкала интуитивного питания  (IES-23)'] = ''
@@ -103,21 +124,27 @@ def calc_ies(data, res):
 
 def calc_debq(data, res):
     res['Опросник стиля пищевого поведения / Голладский пищевой опросник (DEBQ)'] = ''
-    
+
+    scale_name = 'Ограничительный'
     cols = ['DEBQ_1', 'DEBQ_2', 'DEBQ_3', 'DEBQ_4', 'DEBQ_5', 'DEBQ_6', 'DEBQ_7', 'DEBQ_8', 'DEBQ_9', 'DEBQ_10']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    res['Ограничительный'] = data[cols].mean(axis=1)
+    res[scale_name] = data[cols].mean(axis=1)
+    res[scale_name] = res[scale_name].apply(lambda x: '{:.2f}'.format(x)) + " (норма: 2.4)"
 
+    scale_name = 'Эмоциональный'
     cols = ['DEBQ_11', 'DEBQ_12', 'DEBQ_13', 'DEBQ_14', 'DEBQ_15', 'DEBQ_16', 'DEBQ_17', 'DEBQ_18', 'DEBQ_19', 'DEBQ_20', 'DEBQ_21', 'DEBQ_22', 'DEBQ_23']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    res['Эмоциональный'] = data[cols].mean(axis=1)
+    res[scale_name] = data[cols].mean(axis=1)
+    res[scale_name] = res[scale_name].apply(lambda x: '{:.2f}'.format(x)) + " (норма: 1.8)"
 
+    scale_name = 'Экстернальный'
     cols = ['DEBQ_24', 'DEBQ_25', 'DEBQ_26', 'DEBQ_27', 'DEBQ_28', 'DEBQ_29', 'DEBQ_30', 'DEBQ_31', 'DEBQ_32', 'DEBQ_33']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    res['Экстернальный'] = data[cols].mean(axis=1)
+    res[scale_name] = data[cols].mean(axis=1)
+    res[scale_name] = res[scale_name].apply(lambda x: '{:.2f}'.format(x)) + " (норма: 2.7)"
 
 def calc_nvm(data, res):
     res['NVM - Нидерландский личностный опросник'] = ''
@@ -154,45 +181,127 @@ def calc_nvm(data, res):
 
 def calc_ders(data, res):
     res['Шкала трудностей эмоциональной регуляции (DERS-18)'] = ''
-    
+
+    scale_name = 'Осозанность'
     cols = 'DERS_1+DERS_4+DERS_6'
     cols = cols.split('+')
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    res['Осозанность'] = data[cols].sum(axis=1)
+    res[scale_name] = data[cols].sum(axis=1)
+    res[scale_name] = res[scale_name].apply(lambda x: '{:.0f}'.format(x)) + " из 15"
 
+    scale_name = 'Ясность'
     cols = 'DERS_2+DERS_3+DERS_5'
     cols = cols.split('+')
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    res['Ясность'] = data[cols].sum(axis=1)
+    res[scale_name] = data[cols].sum(axis=1)
+    res[scale_name] = res[scale_name].apply(lambda x: '{:.0f}'.format(x)) + " из 15"
 
+    scale_name = 'Целенаправленность'
     cols = 'DERS_8+DERS_12+DERS_15'
     cols = cols.split('+')
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    res['Целенаправленность'] = data[cols].sum(axis=1)
+    res[scale_name] = data[cols].sum(axis=1)
+    res[scale_name] = res[scale_name].apply(lambda x: '{:.0f}'.format(x)) + " из 15"
 
+    scale_name = 'Управление импульсами'
     cols = 'DERS_9+DERS_16+DERS_18'
     cols = cols.split('+')
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    res['Управление импульсами'] = data[cols].sum(axis=1)
+    res[scale_name] = data[cols].sum(axis=1)
+    res[scale_name] = res[scale_name].apply(lambda x: '{:.0f}'.format(x)) + " из 15"
 
+    scale_name = 'Непринятие эмоциональных реакций'
     cols = 'DERS_7+DERS_13+DERS_14'
     cols = cols.split('+')
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    res['Непринятие эмоциональных реакций'] = data[cols].sum(axis=1)
+    res[scale_name] = data[cols].sum(axis=1)
+    res[scale_name] = res[scale_name].apply(lambda x: '{:.0f}'.format(x)) + " из 15"
 
+    scale_name = 'Стратегии'
     cols = 'DERS_10+DERS_11+DERS_17'
     cols = cols.split('+')
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    res['Стратегии'] = data[cols].sum(axis=1)
+    res[scale_name] = data[cols].sum(axis=1)
+    res[scale_name] = res[scale_name].apply(lambda x: '{:.0f}'.format(x)) + " из 15"
 
     cols = ['ders_{}'.format(i) for i in range(1, ders_count + 1)]
-    res['DERS_Общий балл'] = data[cols].sum(axis=1)
+    res['DERS_Общий балл'] = data[cols].sum(axis=1).astype(np.int)
+
+def format_edeq(worksheet, general_res, header_format, outlier_format):
+    worksheet.set_row(1, None, header_format)
+    options = {
+        'type': 'cell',
+        'criteria': 'not between',
+        'minimum': -0.07,
+        'maximum': 2.57,
+        'format': outlier_format
+    }
+    worksheet.conditional_format(2, 1, 2, len(general_res.columns) - 1, options)
+
+    options['minimum'] = -0.24
+    options['maximum'] = 1.48
+    worksheet.conditional_format(3, 1, 2, len(general_res.columns) - 1, options)
+
+    options['minimum'] = 0.55
+    options['maximum'] = 3.75
+    worksheet.conditional_format(4, 1, 2, len(general_res.columns) - 1, options)
+
+    options['minimum'] = 0.22
+    options['maximum'] = 2.96
+    worksheet.conditional_format(5, 1, 2, len(general_res.columns) - 1, options)
+
+    options['minimum'] = 0.34
+    options['maximum'] = 2.77
+    worksheet.conditional_format(6, 1, 2, len(general_res.columns) - 1, options)
+
+def format_dass(worksheet, general_res, header_format, outlier_format):
+    worksheet.set_row(18, None, header_format)
+    for row_index in range(19, 22):
+        worksheet.set_row(row_index, None, outlier_format)
+
+def format_ies(worksheet, general_res, header_format, outlier_format):
+    worksheet.set_row(22, None, header_format)
+    options = {
+        'type': 'cell',
+        'criteria': 'not between',
+        'minimum': 2.8,
+        'maximum': 4.2,
+        'format': outlier_format
+    }
+    worksheet.conditional_format(23, 1, 2, len(general_res.columns) - 1, options)
+
+    options['minimum'] = 2.33
+    options['maximum'] = 4.03
+    worksheet.conditional_format(24, 1, 2, len(general_res.columns) - 1, options)
+
+    options['minimum'] = 2.91
+    options['maximum'] = 4.23
+    worksheet.conditional_format(25, 1, 2, len(general_res.columns) - 1, options)
+
+    options['minimum'] = 2.49
+    options['maximum'] = 4.09
+    worksheet.conditional_format(26, 1, 2, len(general_res.columns) - 1, options)
+
+    options['minimum'] = 2.9
+    options['maximum'] = 3.86
+    worksheet.conditional_format(27, 1, 2, len(general_res.columns) - 1, options)
+
+def format_debq(worksheet, general_res, header_format, outlier_format):
+    worksheet.set_row(28, None, header_format)
+
+def format_nvm(worksheet, general_res, header_format, outlier_format):
+    worksheet.set_row(32, None, header_format)
+
+def format_ders(worksheet, general_res, header_format, outlier_format):
+    worksheet.set_row(38, None, header_format)
+    for row_index in range(39, 46):
+        worksheet.set_row(row_index, None, outlier_format)
 
 if __name__ == '__main__':
     filename = sys.argv[1]
@@ -338,23 +447,18 @@ if __name__ == '__main__':
     writer = pd.ExcelWriter('/tmp/exp.xlsx', engine='xlsxwriter')
     data.to_excel(writer, index=False, sheet_name='replaced')
     general_res = general_res.transpose()
-    general_res.to_excel(writer, index=True, sheet_name='general')
+    general_res.reset_index(inplace=True)
+    general_res.to_excel(writer, index=False, sheet_name='general')
 
     # Get the xlsxwriter workbook and worksheet objects.
-    workbook  = writer.book
+    workbook = writer.book
     worksheet = writer.sheets['general']
-
-    # Add some cell formats.
-    format_index = workbook.add_format()
-    format_index.set_bold(True)
-    format_index.set_align('left')
-    assert worksheet.set_column(0, 0, 50, format_index) == 0
 
     # format EDEQ, IES and DEBQ
     format_values = workbook.add_format({'num_format': '0.00'})
     format_values.set_bold(False)
     format_values.set_align('right')
-    assert worksheet.set_column(1, len(general_res.columns), None, format_values) == 0
+    assert worksheet.set_column(1, len(general_res.columns), 20, format_values) == 0
 
     # format DASS, NVM and DERS
     format_values = workbook.add_format({'num_format': '0'})
@@ -365,12 +469,22 @@ if __name__ == '__main__':
     for row_index in range(39, 46):
         assert worksheet.set_row(row_index, None, format_values) == 0
 
-    # row = general_res.iloc[[2]]
-    # numeric_values = row.values[:, 0]
-    # indices = np.where(np.logical_or(numeric_values<-0.24, numeric_values>1.48))[0]
-    # # Set the column width and format.
-    # for col_num in indices:
-    #     assert worksheet.set_column(col_num + 1, col_num + 1, None, format_index) == 0
+    # label outliers
+    header_format = workbook.add_format({'bg_color': 'yellow'})
+    outlier_format = workbook.add_format({'bg_color': 'red', 'align': 'right'})
+    format_edeq(worksheet, general_res, header_format, outlier_format)
+    format_ies(worksheet, general_res, header_format, outlier_format)
 
-    # Close the Pandas Excel writer and output the Excel file.
+    outlier_format = workbook.add_format({'align': 'right'})
+    format_dass(worksheet, general_res, header_format, outlier_format)
+    format_nvm(worksheet, general_res, header_format, outlier_format)
+    format_debq(worksheet, general_res, header_format, outlier_format)
+    format_ders(worksheet, general_res, header_format, outlier_format)
+
+    # Add some cell formats.
+    format_index = workbook.add_format()
+    format_index.set_bold(True)
+    format_index.set_align('left')
+    assert worksheet.set_column(0, 0, 50, format_index) == 0
+
     writer.save()
