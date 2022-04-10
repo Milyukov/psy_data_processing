@@ -253,19 +253,19 @@ def format_edeq(worksheet, general_res, header_format, outlier_format):
 
     options['minimum'] = -0.24
     options['maximum'] = 1.48
-    worksheet.conditional_format(3, 1, 2, len(general_res.columns) - 1, options)
+    worksheet.conditional_format(3, 1, 3, len(general_res.columns) - 1, options)
 
     options['minimum'] = 0.55
     options['maximum'] = 3.75
-    worksheet.conditional_format(4, 1, 2, len(general_res.columns) - 1, options)
+    worksheet.conditional_format(4, 1, 4, len(general_res.columns) - 1, options)
 
     options['minimum'] = 0.22
     options['maximum'] = 2.96
-    worksheet.conditional_format(5, 1, 2, len(general_res.columns) - 1, options)
+    worksheet.conditional_format(5, 1, 5, len(general_res.columns) - 1, options)
 
     options['minimum'] = 0.34
     options['maximum'] = 2.77
-    worksheet.conditional_format(6, 1, 2, len(general_res.columns) - 1, options)
+    worksheet.conditional_format(6, 1, 6, len(general_res.columns) - 1, options)
 
 def format_dass(worksheet, general_res, header_format, outlier_format):
     worksheet.set_row(18, None, header_format)
@@ -281,23 +281,23 @@ def format_ies(worksheet, general_res, header_format, outlier_format):
         'maximum': 4.2,
         'format': outlier_format
     }
-    worksheet.conditional_format(23, 1, 2, len(general_res.columns) - 1, options)
+    worksheet.conditional_format(23, 1, 23, len(general_res.columns) - 1, options)
 
     options['minimum'] = 2.33
     options['maximum'] = 4.03
-    worksheet.conditional_format(24, 1, 2, len(general_res.columns) - 1, options)
+    worksheet.conditional_format(24, 1, 24, len(general_res.columns) - 1, options)
 
     options['minimum'] = 2.91
     options['maximum'] = 4.23
-    worksheet.conditional_format(25, 1, 2, len(general_res.columns) - 1, options)
+    worksheet.conditional_format(25, 1, 25, len(general_res.columns) - 1, options)
 
     options['minimum'] = 2.49
     options['maximum'] = 4.09
-    worksheet.conditional_format(26, 1, 2, len(general_res.columns) - 1, options)
+    worksheet.conditional_format(26, 1, 26, len(general_res.columns) - 1, options)
 
     options['minimum'] = 2.9
     options['maximum'] = 3.86
-    worksheet.conditional_format(27, 1, 2, len(general_res.columns) - 1, options)
+    worksheet.conditional_format(27, 1, 27, len(general_res.columns) - 1, options)
 
 def format_debq(worksheet, general_res, header_format, outlier_format):
     worksheet.set_row(28, None, header_format)
