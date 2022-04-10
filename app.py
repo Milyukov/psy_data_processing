@@ -71,7 +71,8 @@ def calc_dass(data, dass_res):
     for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
         locs.append(dass_res['Депрессия'].between(min_val, max_val))
     for loc in locs:
-        dass_res.loc[loc, 'Депрессия'] = dass_res.loc[loc, 'Депрессия'].apply(str) + " ({})".format(suffix)
+        if loc[0]:
+            dass_res.loc[loc, 'Депрессия'] = dass_res.loc[loc, 'Депрессия'].apply(str) + " ({})".format(suffix)
 
     cols = ['DASS_2', 'DASS_4', 'DASS_7', 'DASS_9', 'DASS_15', 'DASS_19', 'DASS_20']
     for i, col in enumerate(cols):
@@ -84,7 +85,8 @@ def calc_dass(data, dass_res):
     for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
         locs.append(dass_res['Тревога'].between(min_val, max_val))
     for loc in locs:
-        dass_res.loc[loc, 'Тревога'] = dass_res.loc[loc, 'Тревога'].apply(str) + " ({})".format(suffix)
+        if loc[0]:
+            dass_res.loc[loc, 'Тревога'] = dass_res.loc[loc, 'Тревога'].apply(str) + " ({})".format(suffix)
 
     cols = ['DASS_1', 'DASS_6', 'DASS_8', 'DASS_11', 'DASS_12', 'DASS_14', 'DASS_18']
     for i, col in enumerate(cols):
@@ -98,7 +100,8 @@ def calc_dass(data, dass_res):
     for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
         locs.append(dass_res['Стресс'].between(min_val, max_val))
     for loc in locs:
-        dass_res.loc[loc, 'Стресс'] = dass_res.loc[loc, 'Стресс'].apply(str) + " ({})".format(suffix)
+        if loc[0]:
+            dass_res.loc[loc, 'Стресс'] = dass_res.loc[loc, 'Стресс'].apply(str) + " ({})".format(suffix)
 
 def calc_ies(data, res):
     res['Шкала интуитивного питания  (IES-23)'] = ''
