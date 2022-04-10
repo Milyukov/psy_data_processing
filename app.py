@@ -473,7 +473,7 @@ def run(filename):
 
     # label outliers
     header_format = workbook.add_format({'bg_color': 'yellow'})
-    outlier_format = workbook.add_format({'bg_color': 'red', 'align': 'right'})
+    outlier_format = workbook.add_format({'bg_color': '#FAA9A5', 'align': 'right'})
     format_edeq(worksheet, general_res, header_format, outlier_format)
     format_ies(worksheet, general_res, header_format, outlier_format)
 
