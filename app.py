@@ -8,23 +8,23 @@ edeq_start_col = 7
 edeq_count = 33
 
 # DASS
-dass_start_col = edeq_start_col + edeq_count #41
+dass_start_col = edeq_start_col + edeq_count
 dass_count = 21
 
 # IES
-ies_start_col = dass_start_col + dass_count #63
+ies_start_col = dass_start_col + dass_count
 ies_count = 23
 
 # DEBQ
-debq_start_col = ies_start_col + ies_count #89
+debq_start_col = ies_start_col + ies_count
 debq_count = 33
 
 # NVM
-nvm_start_col = debq_start_col + debq_count #123
+nvm_start_col = debq_start_col + debq_count
 nvm_count = 83
 
 # DERS
-ders_start_col = nvm_start_col + nvm_count #208
+ders_start_col = nvm_start_col + nvm_count
 ders_count = 18
 
 def calc_edeq(data, edeq_res):
@@ -350,10 +350,20 @@ if __name__ == '__main__':
     format_index.set_align('left')
     assert worksheet.set_column(0, 0, 50, format_index) == 0
 
+    # format EDEQ, IES and DEBQ
     format_values = workbook.add_format({'num_format': '0.00'})
     format_values.set_bold(False)
     format_values.set_align('right')
     assert worksheet.set_column(1, len(general_res.columns), None, format_values) == 0
+
+    # format DASS, NVM and DERS
+    format_values = workbook.add_format({'num_format': '0'})
+    for row_index in range(19, 22):
+        assert worksheet.set_row(row_index, None, format_values) == 0
+    for row_index in range(33, 38):
+        assert worksheet.set_row(row_index, None, format_values) == 0
+    for row_index in range(39, 46):
+        assert worksheet.set_row(row_index, None, format_values) == 0
 
     # row = general_res.iloc[[2]]
     # numeric_values = row.values[:, 0]
