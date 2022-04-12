@@ -28,8 +28,6 @@ ders_start_col = nvm_start_col + nvm_count
 ders_count = 18
 
 def calc_edeq(data, edeq_res):
-    edeq_res['Опросник питания (EDEQ)'] = ''
-
     cols = ['EDEQ_1', 'EDEQ_2', 'EDEQ_3', 'EDEQ_4', 'EDEQ_5']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
@@ -311,11 +309,11 @@ def format_ders(worksheet, general_res, header_format, outlier_format):
         worksheet.set_row(row_index, None, outlier_format)
 
 def run(filename):
-    data = utils.prepare_data_frame(filename, sheet_name=0)
-    cols = data.columns.values
+    original_data = utils.prepare_data_frame(filename, sheet_name=0)
+    cols = original_data.columns.values
 
     # get questions names
-    question_cols = ['фио']
+    question_cols = []
 
     edeq_questions = cols[edeq_start_col:edeq_start_col + edeq_count]
     question_cols.extend(edeq_questions)
@@ -335,7 +333,10 @@ def run(filename):
     ders_questions = cols[ders_start_col:ders_start_col + ders_count]
     question_cols.extend(ders_questions)
 
-    data = data[question_cols]
+    data = original_data[question_cols]
+
+    names = original_data[['фио', 'имя']].apply(lambda x: x[x.first_valid_index()], axis=1)
+    data.insert(0, 'фио', names)
 
     # generate new question names
     questions_to_codes = {}
@@ -426,9 +427,8 @@ def run(filename):
 
     data[inverted_columns] = utils.replace_answers(data[inverted_columns], replace_inverted_answers_dict)
 
-
     ### calculate statistics
-    edeq_res = pd.DataFrame()
+    edeq_res = pd.DataFrame([''] * len(data), columns=['Опросник питания (EDEQ)'])
     calc_edeq(data, edeq_res)
 
     cols = ['edeq_13', 'edeq_14', 'edeq_15', 'edeq_16', 'edeq_17', 'edeq_18',
@@ -445,6 +445,9 @@ def run(filename):
     calc_debq(data, general_res)
     calc_nvm(data, general_res)
     calc_ders(data, general_res)
+
+    general_res = general_res.replace(np.nan, 'Нет ответов')
+    general_res = general_res.replace('nan', 'Нет ответов')
 
     edeq_res.set_axis(data['фио'], inplace=True)
     general_res.set_axis(data['фио'], inplace=True)
@@ -464,7 +467,7 @@ def run(filename):
     format_values = workbook.add_format({'num_format': '0.00'})
     format_values.set_bold(False)
     format_values.set_align('right')
-    assert worksheet.set_column(1, len(general_res.columns), 20, format_values) == 0
+    assert worksheet.set_column(1, len(general_res.columns), 30, format_values) == 0
 
     # format DASS, NVM and DERS
     format_values = workbook.add_format({'num_format': '0'})
