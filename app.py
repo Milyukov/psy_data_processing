@@ -61,45 +61,42 @@ def calc_dass(data, dass_res):
     cols = ['DASS_3', 'DASS_5', 'DASS_10', 'DASS_13', 'DASS_16', 'DASS_17', 'DASS_21']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    dass_res['Депрессия'] = 2 * data[cols].sum(axis=1)
+    dass_res['Депрессия'] = 2 * data[cols].sum(axis=1).apply(int)
     min_vals = [0, 10, 14, 21, 28]
     max_vals = [9, 13, 20, 27, 10000]
     suffixes = ['Нормативно', 'Неявно выражено', 'Средне выражено', 'Явно выражено', 'Крайне тяжело']
     locs = []
     for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
-        locs.append(dass_res['Депрессия'].between(min_val, max_val))
-    for loc in locs:
-        if loc[0]:
-            dass_res.loc[loc, 'Депрессия'] = dass_res.loc[loc, 'Депрессия'].apply(str) + " ({})".format(suffix)
+        locs.append(dass_res['Депрессия'].between(min_val, max_val).values)
+    for index, loc in enumerate(locs):
+        dass_res.loc[loc, 'Депрессия'] = dass_res.loc[loc, 'Депрессия'].apply(str) + " ({})".format(suffixes[index])
 
     cols = ['DASS_2', 'DASS_4', 'DASS_7', 'DASS_9', 'DASS_15', 'DASS_19', 'DASS_20']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    dass_res['Тревога'] = 2 * data[cols].sum(axis=1)
+    dass_res['Тревога'] = 2 * data[cols].sum(axis=1).apply(int)
     min_vals = [0, 8, 10, 15, 19]
     max_vals = [7, 9, 14, 20, 10000]
     suffixes = ['Нормативно', 'Неявно выражено', 'Средне выражено', 'Явно выражено', 'Крайне тяжело']
     locs = []
     for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
-        locs.append(dass_res['Тревога'].between(min_val, max_val))
-    for loc in locs:
-        if loc[0]:
-            dass_res.loc[loc, 'Тревога'] = dass_res.loc[loc, 'Тревога'].apply(str) + " ({})".format(suffix)
+        locs.append(dass_res['Тревога'].between(min_val, max_val).values)
+    for index, loc in enumerate(locs):
+        dass_res.loc[loc, 'Тревога'] = dass_res.loc[loc, 'Тревога'].apply(str) + " ({})".format(suffixes[index])
 
     cols = ['DASS_1', 'DASS_6', 'DASS_8', 'DASS_11', 'DASS_12', 'DASS_14', 'DASS_18']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    dass_res['Стресс'] = 2 * data[cols].sum(axis=1)
+    dass_res['Стресс'] = 2 * data[cols].sum(axis=1).apply(int)
 
     min_vals = [0, 15, 19, 26, 34]
     max_vals = [14, 18, 25, 33, 10000]
     suffixes = ['Нормативно', 'Неявно выражено', 'Средне выражено', 'Явно выражено', 'Крайне тяжело']
     locs = []
     for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
-        locs.append(dass_res['Стресс'].between(min_val, max_val))
-    for loc in locs:
-        if loc[0]:
-            dass_res.loc[loc, 'Стресс'] = dass_res.loc[loc, 'Стресс'].apply(str) + " ({})".format(suffix)
+        locs.append(dass_res['Стресс'].between(min_val, max_val).values)
+    for index, loc in enumerate(locs):
+        dass_res.loc[loc, 'Стресс'] = dass_res.loc[loc, 'Стресс'].apply(str) + " ({})".format(suffixes[index])
 
 def calc_ies(data, res):
     res['Шкала интуитивного питания  (IES-23)'] = ''
@@ -448,6 +445,15 @@ def run(filename):
 
     general_res = general_res.replace(np.nan, 'Нет ответов')
     general_res = general_res.replace('nan', 'Нет ответов')
+
+    def upper_first_letters(s):
+        words = s.split()
+        new_words = []
+        for word in words:
+            new_words.append(word[0].upper() + word[1:])
+        return ' '.join(new_words)
+
+    data['фио'] = data['фио'].apply(upper_first_letters)
 
     edeq_res.set_axis(data['фио'], inplace=True)
     general_res.set_axis(data['фио'], inplace=True)
