@@ -2,6 +2,7 @@ import tests.utils.tables as utils
 import pandas as pd
 import numpy as np
 import sys
+import re
 
 # EDEQ
 edeq_start_col = 7
@@ -236,7 +237,8 @@ def calc_ders(data, res):
     res['DERS_Общий балл'] = data[cols].sum(axis=1).astype(np.int)
 
 def format_edeq(worksheet, general_res, header_format, outlier_format):
-    worksheet.set_row(1, None, header_format)
+    row_index = 3
+    worksheet.set_row(row_index, None, header_format)
     options = {
         'type': 'cell',
         'criteria': 'not between',
@@ -244,31 +246,40 @@ def format_edeq(worksheet, general_res, header_format, outlier_format):
         'maximum': 2.57,
         'format': outlier_format
     }
-    worksheet.conditional_format(2, 1, 2, len(general_res.columns) - 1, options)
+
+    row_index += 1
+    worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, options)
 
     options['minimum'] = -0.24
     options['maximum'] = 1.48
-    worksheet.conditional_format(3, 1, 3, len(general_res.columns) - 1, options)
+    row_index += 1
+    worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, options)
 
     options['minimum'] = 0.55
     options['maximum'] = 3.75
-    worksheet.conditional_format(4, 1, 4, len(general_res.columns) - 1, options)
+    row_index += 1
+    worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, options)
 
     options['minimum'] = 0.22
     options['maximum'] = 2.96
-    worksheet.conditional_format(5, 1, 5, len(general_res.columns) - 1, options)
+    row_index += 1
+    worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, options)
 
     options['minimum'] = 0.34
     options['maximum'] = 2.77
-    worksheet.conditional_format(6, 1, 6, len(general_res.columns) - 1, options)
+    row_index += 1
+    worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, options)
 
 def format_dass(worksheet, general_res, header_format, outlier_format):
-    worksheet.set_row(18, None, header_format)
-    for row_index in range(19, 22):
+    initial_row_index = 20
+    worksheet.set_row(initial_row_index, None, header_format)
+    initial_row_index += 1
+    for row_index in range(initial_row_index, initial_row_index + 3):
         worksheet.set_row(row_index, None, outlier_format)
 
 def format_ies(worksheet, general_res, header_format, outlier_format):
-    worksheet.set_row(22, None, header_format)
+    row_index = 24
+    worksheet.set_row(row_index, None, header_format)
     options = {
         'type': 'cell',
         'criteria': 'not between',
@@ -276,33 +287,42 @@ def format_ies(worksheet, general_res, header_format, outlier_format):
         'maximum': 4.2,
         'format': outlier_format
     }
-    worksheet.conditional_format(23, 1, 23, len(general_res.columns) - 1, options)
+
+    row_index += 1
+    worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, options)
 
     options['minimum'] = 2.33
     options['maximum'] = 4.03
-    worksheet.conditional_format(24, 1, 24, len(general_res.columns) - 1, options)
+    row_index += 1
+    worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, options)
 
     options['minimum'] = 2.91
     options['maximum'] = 4.23
-    worksheet.conditional_format(25, 1, 25, len(general_res.columns) - 1, options)
+    row_index += 1
+    worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, options)
 
     options['minimum'] = 2.49
     options['maximum'] = 4.09
-    worksheet.conditional_format(26, 1, 26, len(general_res.columns) - 1, options)
+    row_index += 1
+    worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, options)
 
     options['minimum'] = 2.9
     options['maximum'] = 3.86
-    worksheet.conditional_format(27, 1, 27, len(general_res.columns) - 1, options)
+    row_index += 1
+    worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, options)
 
 def format_debq(worksheet, general_res, header_format, outlier_format):
-    worksheet.set_row(28, None, header_format)
+    worksheet.set_row(30, None, header_format)
 
 def format_nvm(worksheet, general_res, header_format, outlier_format):
-    worksheet.set_row(32, None, header_format)
+    worksheet.set_row(34, None, header_format)
 
 def format_ders(worksheet, general_res, header_format, outlier_format):
-    worksheet.set_row(38, None, header_format)
-    for row_index in range(39, 46):
+    initial_row_index = 40
+    worksheet.set_row(initial_row_index, None, header_format)
+
+    initial_row_index += 1
+    for row_index in range(initial_row_index, initial_row_index + 7):
         worksheet.set_row(row_index, None, outlier_format)
 
 def run(filename):
@@ -330,7 +350,9 @@ def run(filename):
     ders_questions = cols[ders_start_col:ders_start_col + ders_count]
     question_cols.extend(ders_questions)
 
-    data = original_data[question_cols]
+    additional_info = ['возраст', 'рост', 'текущий вес']
+    data = original_data[additional_info + question_cols]
+    data['возраст'] = data['возраст'].fillna(0.0).astype(int)
 
     names = original_data[['фио', 'имя']].apply(lambda x: x[x.first_valid_index()], axis=1)
     data.insert(0, 'фио', names)
@@ -425,8 +447,35 @@ def run(filename):
     data[inverted_columns] = utils.replace_answers(data[inverted_columns], replace_inverted_answers_dict)
 
     ### calculate statistics
-    edeq_res = pd.DataFrame([''] * len(data), columns=['Опросник питания (EDEQ)'])
-    calc_edeq(data, edeq_res)
+    general_res = pd.DataFrame([''] * len(data), columns=['Опросник питания (EDEQ)'])
+
+    general_res.insert(0, 'Возраст', data['возраст'])
+
+    def format_weight(val):
+        val_str = '{}'.format(val)
+        res = re.search('\d*.*,*\d', val_str)
+        res = res.group()
+        res.replace(',', '.')
+        return float(res)
+
+    weight = data['текущий вес'].fillna(0).apply(format_weight)
+
+    def format_height(val):
+        val_str = '{}'.format(val)
+        res = re.search('\d*.*,*\d', val_str)
+        res = res.group()
+        res.replace(',', '.')
+        if '.' in res:
+            integer_part, fraction = res.split('.')
+            if float(integer_part) >= 100:
+                return float(res) / 100.0
+            return float(res)
+        else:
+            return float(res) / 100.0
+
+    height = data['рост'].fillna(0).apply(format_height)
+    general_res.insert(1, 'ИМТ', weight.div(height.apply(lambda x: x ** 2)))
+    calc_edeq(data, general_res)
 
     cols = ['edeq_13', 'edeq_14', 'edeq_15', 'edeq_16', 'edeq_17', 'edeq_18',
     'edeq_29', 'edeq_30', 'edeq_31', 'edeq_32', 'edeq_33']
@@ -434,9 +483,8 @@ def run(filename):
         question = codes_to_questions[c]
         question = question[0].upper() + question[1:]
         codes_to_questions[c] = question
-        edeq_res[codes_to_questions[c]] = data[c].apply(str)
+        general_res[codes_to_questions[c]] = data[c].apply(str)
 
-    general_res = edeq_res.copy()
     calc_dass(data, general_res)
     calc_ies(data, general_res)
     calc_debq(data, general_res)
@@ -454,8 +502,6 @@ def run(filename):
         return ' '.join(new_words)
 
     data['фио'] = data['фио'].apply(upper_first_letters)
-
-    edeq_res.set_axis(data['фио'], inplace=True)
     general_res.set_axis(data['фио'], inplace=True)
 
     # Create a Pandas Excel writer using XlsxWriter as the engine.
@@ -477,11 +523,17 @@ def run(filename):
 
     # format DASS, NVM and DERS
     format_values = workbook.add_format({'num_format': '0'})
-    for row_index in range(19, 22):
+    assert worksheet.set_row(1, None, format_values) == 0
+    initial_row_index = 21
+    for row_index in range(initial_row_index, initial_row_index + 3):
         assert worksheet.set_row(row_index, None, format_values) == 0
-    for row_index in range(33, 38):
+    
+    initial_row_index = 35
+    for row_index in range(initial_row_index, initial_row_index + 5):
         assert worksheet.set_row(row_index, None, format_values) == 0
-    for row_index in range(39, 46):
+    
+    initial_row_index = 41
+    for row_index in range(initial_row_index, initial_row_index + 7):
         assert worksheet.set_row(row_index, None, format_values) == 0
 
     # label outliers
