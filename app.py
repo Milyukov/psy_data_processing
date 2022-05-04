@@ -519,7 +519,7 @@ def run(filename):
         val_str = '{}'.format(val)
         res = re.search('\d*.*,*\d', val_str)
         res = res.group()
-        res.replace(',', '.')
+        res = res.replace(',', '.')
         return float(res)
 
     weight = data['edeq_29'].fillna(0).apply(format_weight)
@@ -528,7 +528,7 @@ def run(filename):
         val_str = '{}'.format(val)
         res = re.search('\d*.*,*\d', val_str)
         res = res.group()
-        res.replace(',', '.')
+        res = res.replace(',', '.')
         if '.' in res:
             integer_part, fraction = res.split('.')
             if float(integer_part) >= 100:
@@ -569,7 +569,7 @@ def run(filename):
     general_res.set_axis(data['фио'], inplace=True)
 
     # Create a Pandas Excel writer using XlsxWriter as the engine.
-    writer = pd.ExcelWriter('./result.xlsx', engine='xlsxwriter')
+    writer = pd.ExcelWriter('result.xlsx', engine='xlsxwriter')
     data.to_excel(writer, index=False, sheet_name='replaced')
     general_res = general_res.transpose()
     general_res.reset_index(inplace=True)
