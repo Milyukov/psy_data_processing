@@ -8,3 +8,4 @@ root.withdraw()
 
 file_path = filedialog.askopenfilename()
 run(file_path)
+input("Press Enter to exit...")

@@ -391,6 +391,7 @@ def format_ders(worksheet, general_res, header_format, outlier_format, blank_for
 
 def run(filename):
     original_data = utils.prepare_data_frame(filename, sheet_name=0)
+    original_data = utils.drop_columns(original_data, contains='дата заполнения')
     cols = original_data.columns.values
 
     # get questions names

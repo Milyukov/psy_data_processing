@@ -16,6 +16,14 @@ def replace_questions(table_df, questions_dict):
     df = table_df.rename(columns=questions_dict)
     return df
 
+def drop_columns(table_df, contains=None):
+    if contains is None:
+        return table_df
+    cols = [c for c in table_df.columns if not contains.lower() in c.lower()]
+
+    df = table_df[cols]
+    return df
+
 def drop_dublicates(input_path, input_filenames, output_path, output_filenames, sheetnumbers=None):
     assert len(input_filenames) == len(output_filenames)
 
