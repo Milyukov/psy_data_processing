@@ -29,6 +29,10 @@ nvm_count = 83
 ders_start_col = nvm_start_col + nvm_count
 ders_count = 18
 
+# ED-15
+ed_start_col = ders_start_col + ders_count
+ed_count = 15
+
 def calc_edeq(data, edeq_res):
     cols = ['EDEQ_1', 'EDEQ_2', 'EDEQ_3', 'EDEQ_4', 'EDEQ_5']
     for i, col in enumerate(cols):
@@ -246,6 +250,33 @@ def calc_ders(data, res):
     cols = ['ders_{}'.format(i) for i in range(1, ders_count + 1)]
     res['DERS_Общий балл'] = data[cols].sum(axis=1, skipna=False).apply(lambda x: '{:.0f}'.format(x) if not np.isnan(x) else '')
 
+def calc_ed15(data, res):
+    res['ED-15'] = ''
+
+    scale_name = 'Озабоченность весом и формой тела '
+    cols = ['ED15_2', 'ED15_4', 'ED15_5', 'ED15_6', 'ED15_9', 'ED15_10']
+    for i, col in enumerate(cols):
+        cols[i] = col.lower()
+    res[scale_name] = data[cols].mean(axis=1)
+    res[scale_name] = res[scale_name].apply(
+        lambda x: '{:.2f}'.format(x) if not np.isnan(x) else '')
+
+    scale_name = 'Озабоченность питанием '
+    cols = ['ED15_1', 'ED15_3', 'ED15_7', 'ED15_8']
+    for i, col in enumerate(cols):
+        cols[i] = col.lower()
+    res[scale_name] = data[cols].mean(axis=1)
+    res[scale_name] = res[scale_name].apply(
+        lambda x: '{:.2f}'.format(x) if not np.isnan(x) else '')
+
+    scale_name = 'Общий балл'
+    cols = ['ED15_1', 'ED15_2', 'ED15_3', 'ED15_4', 'ED15_5', 'ED15_6', 'ED15_7', 'ED15_8', 'ED15_9', 'ED15_10']
+    for i, col in enumerate(cols):
+        cols[i] = col.lower()
+    res[scale_name] = data[cols].mean(axis=1)
+    res[scale_name] = res[scale_name].apply(
+        lambda x: '{:.2f}'.format(x) if not np.isnan(x) else '')
+
 def format_edeq(worksheet, general_res, header_format, outlier_format, blank_format):
     row_index = 3
     worksheet.set_row(row_index, None, header_format)
@@ -389,6 +420,18 @@ def format_ders(worksheet, general_res, header_format, outlier_format, blank_for
     for row_index in range(initial_row_index, initial_row_index + 7):
         worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, blank)
 
+
+def format_ed15(worksheet, general_res, header_format, outlier_format, blank_format):
+    options = {
+        'format': outlier_format
+        }
+    initial_row_index = 48
+    worksheet.set_row(initial_row_index, None, header_format)
+
+    initial_row_index += 1
+    for row_index in range(initial_row_index, initial_row_index + 3):
+        worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, options)
+
 def run(filename):
     original_data = utils.prepare_data_frame(filename, sheet_name=0)
     original_data = utils.drop_columns(original_data, contains='дата заполнения')
@@ -415,12 +458,12 @@ def run(filename):
     ders_questions = cols[ders_start_col:ders_start_col + ders_count]
     question_cols.extend(ders_questions)
 
-    additional_info = ['возраст', 'рост', 'текущий вес']
-    data = original_data[additional_info + question_cols]
-    data['возраст'] = data['возраст'].fillna(0).astype(int)
+    ed15_questions = cols[ed_start_col:ed_start_col + ed_count]
+    question_cols.extend(ed15_questions)
 
-    names = original_data[['фио', 'имя']].apply(lambda x: x[x.first_valid_index()], axis=1)
-    data.insert(0, 'фио', names)
+    additional_info = ['имя', 'фио', 'возраст', 'рост', 'текущий вес']
+    original_data = original_data[additional_info + question_cols]
+    
 
     # generate new question names
     questions_to_codes = {}
@@ -445,10 +488,14 @@ def run(filename):
     for number, q in enumerate(ders_questions):
         questions_to_codes[q] = 'ders_{}'.format(number + 1)
 
-    data = utils.replace_questions(data, questions_to_codes)
+    for number, q in enumerate(ed15_questions):
+        questions_to_codes[q] = 'ed15_{}'.format(number + 1)
+        codes_to_questions['ed15_{}'.format(number + 1)] = q
+
+    data = utils.replace_questions(original_data, questions_to_codes)
 
     # generate new answers names
-    replace_answers_dict = {
+    replace_answers_dict_edeq = {
         # EDEQ
         'ни одного': 0,
         '1-5 дней':	1,
@@ -467,40 +514,98 @@ def run(filename):
         'слегка': 2,
         'умеренно': 4,
         'существенно': 6,
+        np.nan: '',
+        'nan': '',
+        'NaN': '',
+        'мой ответ': 0
+    }
+    
+    replace_answers_dict_dass = {
         # DASS
         'вообще не относится ко мне': 0,
         'относилось ко мне до некоторой степени или некоторое время': 1,
         'относилось ко мне в значительной мере или значительную часть времени': 2,
         'относилось ко мне полностью или большую часть времени': 3,
+        np.nan: '',
+        'nan': '',
+        'NaN': ''
+    }
+    replace_answers_dict_ies = {
         # IES
         'полностью не согласен': 1,
         'не согласен': 2,
         'ни то, ни другое': 3,
         'согласен': 4,
         'полностью согласен': 5,
+        np.nan: '',
+        'nan': '',
+        'NaN': ''
+    }
+    replace_answers_dict_debq = {
         # DEBQ
         'никогда': 1,
         'очень редко': 2,
         'иногда': 3,
         'часто': 4,
         'очень часто': 5,
+        np.nan: '',
+        'nan': '',
+        'NaN': ''
+    }
+    replace_answers_dict_nvm = {
         # NVM
         'неверно': 0,
         'затрудняюсь ответить': 1,
         'верно': 2,
+        np.nan: '',
+        'nan': '',
+        'NaN': ''
+    }
+
+    replace_answers_dict_ders = {
         # DERS
         'почти никогда (0-10%)': 1,
         'иногда (11-35%)': 2,
         'примерно половину времени (36-65%)': 3,
         'большую часть времени (66-90%)': 4,
-        'почти всегда (91-100%)': 5
+        'почти всегда (91-100%)': 5,
+        np.nan: '',
+        'nan': '',
+        'NaN': ''
     }
+
+    replace_answers_dict_ed15 = {
+        'никогда': 0,
+        'редко': 1,
+        'изредка': 2,
+        'иногда': 3,
+        'часто': 4,
+        'очень часто': 5,
+        'всегда': 6,
+        np.nan: '',
+        'nan': '',
+        'NaN': ''
+    }
+
+    replace_answers_dict_ed15_back = {val: key for (key, val) in replace_answers_dict_ed15.items()}
 
     inverted_columns = ['IES_1', 'IES_2', 'IES_3', 'IES_7', 'IES_8', 'IES_9', 'IES_10', 'DEBQ_31', 'DERS_1', 'DERS_4', 'DERS_6']
     for index, col in enumerate(inverted_columns):
         inverted_columns[index] = col.lower()
     
-    data = utils.replace_answers(data, replace_answers_dict)
+    edeq_data = utils.replace_answers(data[['edeq_{}'.format(i) for i in range(1, edeq_count + 1)]], replace_answers_dict_edeq)
+    dass_data = utils.replace_answers(data[['dass_{}'.format(i) for i in range(1, dass_count + 1)]], replace_answers_dict_dass)
+    ies_data = utils.replace_answers(data[['ies_{}'.format(i) for i in range(1, ies_count + 1)]], replace_answers_dict_ies)
+    debq_data = utils.replace_answers(data[['debq_{}'.format(i) for i in range(1, debq_count + 1)]], replace_answers_dict_debq)
+    nvm_data = utils.replace_answers(data[['nvm_{}'.format(i) for i in range(1, nvm_count + 1)]], replace_answers_dict_nvm)
+    ders_data = utils.replace_answers(data[['ders_{}'.format(i) for i in range(1, ders_count + 1)]], replace_answers_dict_ders)
+    ed15_data = utils.replace_answers(data[['ed15_{}'.format(i) for i in range(1, ed_count + 1)]], replace_answers_dict_ed15)
+
+    data = pd.concat([edeq_data, dass_data, ies_data, debq_data, nvm_data, ders_data, ed15_data], axis=1)
+    data['возраст'] = original_data['возраст'].fillna(0).astype(int)
+
+    names = original_data[['фио', 'имя']].apply(lambda x: x[x.first_valid_index()], axis=1)
+    data.insert(0, 'фио', names)
 
     replace_inverted_answers_dict = {
         1: 5,
@@ -558,6 +663,13 @@ def run(filename):
     calc_debq(data, general_res)
     calc_nvm(data, general_res)
     calc_ders(data, general_res)
+    calc_ed15(data, general_res)
+    cols = ['ed15_{}'.format(i) for i in range(1, 16)]
+    for c in cols:
+        question = codes_to_questions[c]
+        question = question[0].upper() + question[1:]
+        codes_to_questions[c] = question
+        general_res[codes_to_questions[c]] = data[c].apply(lambda x: str(replace_answers_dict_ed15_back[int(x)]) if not 'например' in str(x) else '0')
 
     def upper_first_letters(s):
         words = s.split()
@@ -608,6 +720,42 @@ def run(filename):
     format_nvm(worksheet, general_res, header_format, outlier_format, blank_format)
     format_debq(worksheet, general_res, header_format, outlier_format, blank_format)
     format_ders(worksheet, general_res, header_format, outlier_format, blank_format)
+    format_ed15(worksheet, general_res, header_format, outlier_format, blank_format)
+
+    # additional sheet
+    summary_cols = ['Ограничение питания', 'Избегание питания', 'Избегание пищи', 'Правила питания', 'Пустой желудок', 
+    'Озабоченность пищей, питанием или калориями', 'Страх потери контроля над питанием', 'Питание втайне от других', 
+    'Питание в социальном контексте', 'Чувство вины в связи с питанием', 'Плоский живот', 'Озабоченность формой тела или весом', 
+    'Значение формы тела', 'Страх набора веса', 'Неудовлетворённость формой тела', 'Дискомфорт при виде своего тела', 
+    'Избегание демонстрации тела', 'Ощущение полноты', 'Важность веса', 'Реакция на просьбу взвешиваться', 'Озабоченность формой тела или весом',
+    'Неудовлетворённость весом', 'Желание сбросить вес']
+
+    capital_codes = ['EDEQ_1', 'EDEQ_2', 'EDEQ_3', 
+    'EDEQ_4', 'EDEQ_5', 'EDEQ_7', 'EDEQ_9', 'EDEQ_19', 'EDEQ_21', 'EDEQ_20', 'EDEQ_6', 'EDEQ_8', 'EDEQ_23', 'EDEQ_10', 
+    'EDEQ_26', 'EDEQ_27', 'EDEQ_28', 'EDEQ_11', 'EDEQ_22', 'EDEQ_24', 'EDEQ_8', 'EDEQ_25', 'EDEQ_12']
+
+    codes = [code.lower() for code in capital_codes]
+
+    questions = [codes_to_questions[code] for code in codes]
+
+
+
+
+    additional_data_frame = original_data[questions]
+    names = original_data[['фио', 'имя']].apply(lambda x: x[x.first_valid_index()], axis=1).apply(upper_first_letters)
+    additional_data_frame.insert(0, 'фио', names)
+    additional_data_frame = utils.replace_questions(additional_data_frame, questions_to_codes)
+    additional_data_frame = utils.replace_answers(additional_data_frame, replace_answers_dict_edeq)
+
+    additional_data = additional_data_frame.values
+
+    data = np.array([
+        ['ФИО'] + summary_cols
+    ])
+    additional_data = np.concatenate([data, additional_data], axis=0)
+
+    additional_data_frame = pd.DataFrame(data=additional_data)
+    additional_data_frame.to_excel(writer, index=False, sheet_name='additional')
 
     # Close the Pandas Excel writer and output the Excel file.
     writer.save()
