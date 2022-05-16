@@ -1,4 +1,5 @@
 from cmath import isnan
+from socket import errorTab
 import tests.utils.tables as utils
 import pandas as pd
 import numpy as np
@@ -79,7 +80,7 @@ def calc_dass(data, dass_res):
     suffixes = ['Нормативно', 'Неявно выражено', 'Средне выражено', 'Явно выражено', 'Крайне тяжело']
     locs = []
     for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
-        locs.append(dass_res['Депрессия'].between(min_val, max_val).values)
+        locs.append(dass_res['Депрессия'].replace('', 20000).between(min_val, max_val).values)
     for index, loc in enumerate(locs):
         dass_res.loc[loc, 'Депрессия'] = dass_res.loc[loc, 'Депрессия'].apply(lambda x: format_answer(x, suffixes[index]))
 
@@ -92,7 +93,7 @@ def calc_dass(data, dass_res):
     suffixes = ['Нормативно', 'Неявно выражено', 'Средне выражено', 'Явно выражено', 'Крайне тяжело']
     locs = []
     for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
-        locs.append(dass_res['Тревога'].between(min_val, max_val).values)
+        locs.append(dass_res['Тревога'].replace('', 20000).between(min_val, max_val).values)
     for index, loc in enumerate(locs):
         dass_res.loc[loc, 'Тревога'] = dass_res.loc[loc, 'Тревога'].apply(lambda x: format_answer(x, suffixes[index]))
 
@@ -106,7 +107,7 @@ def calc_dass(data, dass_res):
     suffixes = ['Нормативно', 'Неявно выражено', 'Средне выражено', 'Явно выражено', 'Крайне тяжело']
     locs = []
     for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
-        locs.append(dass_res['Стресс'].between(min_val, max_val).values)
+        locs.append(dass_res['Стресс'].replace('', 20000).between(min_val, max_val).values)
     for index, loc in enumerate(locs):
         dass_res.loc[loc, 'Стресс'] = dass_res.loc[loc, 'Стресс'].apply(lambda x: format_answer(x, suffixes[index]))
 
@@ -197,6 +198,23 @@ def calc_nvm(data, res):
     res['Экстраверсия'] = data[cols].sum(axis=1, skipna=False)
 
 def calc_ders(data, res):
+
+    def format_cell(x):
+        if x == '':
+            return x
+        elif np.isnan(x):
+            return ''
+        else:
+            return '{:.0f}'.format(x) + " из 15"
+
+    def format_cell_general(x):
+        if x == '':
+            return x
+        elif np.isnan(x):
+            return ''
+        else:
+            return '{:.0f}'.format(x)
+
     res['Шкала трудностей эмоциональной регуляции (DERS-18)'] = ''
 
     scale_name = 'Осозанность'
@@ -205,7 +223,7 @@ def calc_ders(data, res):
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     res[scale_name] = data[cols].sum(axis=1, skipna=False)
-    res[scale_name] = res[scale_name].apply(lambda x: '{:.0f}'.format(x) + " из 15" if not np.isnan(x) else '')
+    res[scale_name] = res[scale_name].apply(format_cell)
 
     scale_name = 'Ясность'
     cols = 'DERS_2+DERS_3+DERS_5'
@@ -213,7 +231,7 @@ def calc_ders(data, res):
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     res[scale_name] = data[cols].sum(axis=1, skipna=False)
-    res[scale_name] = res[scale_name].apply(lambda x: '{:.0f}'.format(x) + " из 15" if not np.isnan(x) else '')
+    res[scale_name] = res[scale_name].apply(format_cell)
 
     scale_name = 'Целенаправленность'
     cols = 'DERS_8+DERS_12+DERS_15'
@@ -221,7 +239,7 @@ def calc_ders(data, res):
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     res[scale_name] = data[cols].sum(axis=1, skipna=False)
-    res[scale_name] = res[scale_name].apply(lambda x: '{:.0f}'.format(x) + " из 15" if not np.isnan(x) else '')
+    res[scale_name] = res[scale_name].apply(format_cell)
 
     scale_name = 'Управление импульсами'
     cols = 'DERS_9+DERS_16+DERS_18'
@@ -229,7 +247,7 @@ def calc_ders(data, res):
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     res[scale_name] = data[cols].sum(axis=1, skipna=False)
-    res[scale_name] = res[scale_name].apply(lambda x: '{:.0f}'.format(x) + " из 15" if not np.isnan(x) else '')
+    res[scale_name] = res[scale_name].apply(format_cell)
 
     scale_name = 'Непринятие эмоциональных реакций'
     cols = 'DERS_7+DERS_13+DERS_14'
@@ -237,7 +255,7 @@ def calc_ders(data, res):
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     res[scale_name] = data[cols].sum(axis=1, skipna=False)
-    res[scale_name] = res[scale_name].apply(lambda x: '{:.0f}'.format(x) + " из 15" if not np.isnan(x) else '')
+    res[scale_name] = res[scale_name].apply(format_cell)
 
     scale_name = 'Стратегии'
     cols = 'DERS_10+DERS_11+DERS_17'
@@ -245,10 +263,10 @@ def calc_ders(data, res):
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     res[scale_name] = data[cols].sum(axis=1, skipna=False)
-    res[scale_name] = res[scale_name].apply(lambda x: '{:.0f}'.format(x) + " из 15" if not np.isnan(x) else '')
+    res[scale_name] = res[scale_name].apply(format_cell)
 
     cols = ['ders_{}'.format(i) for i in range(1, ders_count + 1)]
-    res['DERS_Общий балл'] = data[cols].sum(axis=1, skipna=False).apply(lambda x: '{:.0f}'.format(x) if not np.isnan(x) else '')
+    res['DERS_Общий балл'] = data[cols].sum(axis=1, skipna=False).apply(format_cell_general)
 
 def calc_ed15(data, res):
     res['ED-15'] = ''
@@ -664,12 +682,20 @@ def run(filename):
     calc_nvm(data, general_res)
     calc_ders(data, general_res)
     calc_ed15(data, general_res)
+
+    def format_ed15_cell(x):
+        if x == '':
+            return x
+        if 'например' in x:
+            return '0'
+        return str(replace_answers_dict_ed15_back[int(x)])
+
     cols = ['ed15_{}'.format(i) for i in range(1, 16)]
     for c in cols:
         question = codes_to_questions[c]
         question = question[0].upper() + question[1:]
         codes_to_questions[c] = question
-        general_res[codes_to_questions[c]] = data[c].apply(lambda x: str(replace_answers_dict_ed15_back[int(x)]) if not 'например' in str(x) else '0')
+        general_res[codes_to_questions[c]] = data[c].apply(format_ed15_cell)
 
     def upper_first_letters(s):
         words = s.split()
