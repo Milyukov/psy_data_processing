@@ -1,4 +1,5 @@
 from cmath import isnan
+from socket import errorTab
 import tests.utils.tables as utils
 import pandas as pd
 import numpy as np
@@ -28,6 +29,10 @@ nvm_count = 83
 # DERS
 ders_start_col = nvm_start_col + nvm_count
 ders_count = 18
+
+# ED-15
+ed_start_col = ders_start_col + ders_count
+ed_count = 15
 
 def calc_edeq(data, edeq_res):
     cols = ['EDEQ_1', 'EDEQ_2', 'EDEQ_3', 'EDEQ_4', 'EDEQ_5']
@@ -75,7 +80,7 @@ def calc_dass(data, dass_res):
     suffixes = ['Нормативно', 'Неявно выражено', 'Средне выражено', 'Явно выражено', 'Крайне тяжело']
     locs = []
     for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
-        locs.append(dass_res['Депрессия'].between(min_val, max_val).values)
+        locs.append(dass_res['Депрессия'].replace('', 20000).between(min_val, max_val).values)
     for index, loc in enumerate(locs):
         dass_res.loc[loc, 'Депрессия'] = dass_res.loc[loc, 'Депрессия'].apply(lambda x: format_answer(x, suffixes[index]))
 
@@ -88,7 +93,7 @@ def calc_dass(data, dass_res):
     suffixes = ['Нормативно', 'Неявно выражено', 'Средне выражено', 'Явно выражено', 'Крайне тяжело']
     locs = []
     for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
-        locs.append(dass_res['Тревога'].between(min_val, max_val).values)
+        locs.append(dass_res['Тревога'].replace('', 20000).between(min_val, max_val).values)
     for index, loc in enumerate(locs):
         dass_res.loc[loc, 'Тревога'] = dass_res.loc[loc, 'Тревога'].apply(lambda x: format_answer(x, suffixes[index]))
 
@@ -102,7 +107,7 @@ def calc_dass(data, dass_res):
     suffixes = ['Нормативно', 'Неявно выражено', 'Средне выражено', 'Явно выражено', 'Крайне тяжело']
     locs = []
     for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
-        locs.append(dass_res['Стресс'].between(min_val, max_val).values)
+        locs.append(dass_res['Стресс'].replace('', 20000).between(min_val, max_val).values)
     for index, loc in enumerate(locs):
         dass_res.loc[loc, 'Стресс'] = dass_res.loc[loc, 'Стресс'].apply(lambda x: format_answer(x, suffixes[index]))
 
@@ -193,6 +198,23 @@ def calc_nvm(data, res):
     res['Экстраверсия'] = data[cols].sum(axis=1, skipna=False)
 
 def calc_ders(data, res):
+
+    def format_cell(x):
+        if x == '':
+            return x
+        elif np.isnan(x):
+            return ''
+        else:
+            return '{:.0f}'.format(x) + " из 15"
+
+    def format_cell_general(x):
+        if x == '':
+            return x
+        elif np.isnan(x):
+            return ''
+        else:
+            return '{:.0f}'.format(x)
+
     res['Шкала трудностей эмоциональной регуляции (DERS-18)'] = ''
 
     scale_name = 'Осозанность'
@@ -201,7 +223,7 @@ def calc_ders(data, res):
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     res[scale_name] = data[cols].sum(axis=1, skipna=False)
-    res[scale_name] = res[scale_name].apply(lambda x: '{:.0f}'.format(x) + " из 15" if not np.isnan(x) else '')
+    res[scale_name] = res[scale_name].apply(format_cell)
 
     scale_name = 'Ясность'
     cols = 'DERS_2+DERS_3+DERS_5'
@@ -209,7 +231,7 @@ def calc_ders(data, res):
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     res[scale_name] = data[cols].sum(axis=1, skipna=False)
-    res[scale_name] = res[scale_name].apply(lambda x: '{:.0f}'.format(x) + " из 15" if not np.isnan(x) else '')
+    res[scale_name] = res[scale_name].apply(format_cell)
 
     scale_name = 'Целенаправленность'
     cols = 'DERS_8+DERS_12+DERS_15'
@@ -217,7 +239,7 @@ def calc_ders(data, res):
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     res[scale_name] = data[cols].sum(axis=1, skipna=False)
-    res[scale_name] = res[scale_name].apply(lambda x: '{:.0f}'.format(x) + " из 15" if not np.isnan(x) else '')
+    res[scale_name] = res[scale_name].apply(format_cell)
 
     scale_name = 'Управление импульсами'
     cols = 'DERS_9+DERS_16+DERS_18'
@@ -225,7 +247,7 @@ def calc_ders(data, res):
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     res[scale_name] = data[cols].sum(axis=1, skipna=False)
-    res[scale_name] = res[scale_name].apply(lambda x: '{:.0f}'.format(x) + " из 15" if not np.isnan(x) else '')
+    res[scale_name] = res[scale_name].apply(format_cell)
 
     scale_name = 'Непринятие эмоциональных реакций'
     cols = 'DERS_7+DERS_13+DERS_14'
@@ -233,7 +255,7 @@ def calc_ders(data, res):
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     res[scale_name] = data[cols].sum(axis=1, skipna=False)
-    res[scale_name] = res[scale_name].apply(lambda x: '{:.0f}'.format(x) + " из 15" if not np.isnan(x) else '')
+    res[scale_name] = res[scale_name].apply(format_cell)
 
     scale_name = 'Стратегии'
     cols = 'DERS_10+DERS_11+DERS_17'
@@ -241,10 +263,37 @@ def calc_ders(data, res):
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     res[scale_name] = data[cols].sum(axis=1, skipna=False)
-    res[scale_name] = res[scale_name].apply(lambda x: '{:.0f}'.format(x) + " из 15" if not np.isnan(x) else '')
+    res[scale_name] = res[scale_name].apply(format_cell)
 
     cols = ['ders_{}'.format(i) for i in range(1, ders_count + 1)]
-    res['DERS_Общий балл'] = data[cols].sum(axis=1, skipna=False).apply(lambda x: '{:.0f}'.format(x) if not np.isnan(x) else '')
+    res['DERS_Общий балл'] = data[cols].sum(axis=1, skipna=False).apply(format_cell_general)
+
+def calc_ed15(data, res):
+    res['ED-15'] = ''
+
+    scale_name = 'Озабоченность весом и формой тела '
+    cols = ['ED15_2', 'ED15_4', 'ED15_5', 'ED15_6', 'ED15_9', 'ED15_10']
+    for i, col in enumerate(cols):
+        cols[i] = col.lower()
+    res[scale_name] = data[cols].mean(axis=1)
+    res[scale_name] = res[scale_name].apply(
+        lambda x: '{:.2f}'.format(x) if not np.isnan(x) else '')
+
+    scale_name = 'Озабоченность питанием '
+    cols = ['ED15_1', 'ED15_3', 'ED15_7', 'ED15_8']
+    for i, col in enumerate(cols):
+        cols[i] = col.lower()
+    res[scale_name] = data[cols].mean(axis=1)
+    res[scale_name] = res[scale_name].apply(
+        lambda x: '{:.2f}'.format(x) if not np.isnan(x) else '')
+
+    scale_name = 'Общий балл'
+    cols = ['ED15_1', 'ED15_2', 'ED15_3', 'ED15_4', 'ED15_5', 'ED15_6', 'ED15_7', 'ED15_8', 'ED15_9', 'ED15_10']
+    for i, col in enumerate(cols):
+        cols[i] = col.lower()
+    res[scale_name] = data[cols].mean(axis=1)
+    res[scale_name] = res[scale_name].apply(
+        lambda x: '{:.2f}'.format(x) if not np.isnan(x) else '')
 
 def format_edeq(worksheet, general_res, header_format, outlier_format, blank_format):
     row_index = 3
@@ -389,6 +438,18 @@ def format_ders(worksheet, general_res, header_format, outlier_format, blank_for
     for row_index in range(initial_row_index, initial_row_index + 7):
         worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, blank)
 
+
+def format_ed15(worksheet, general_res, header_format, outlier_format, blank_format):
+    options = {
+        'format': outlier_format
+        }
+    initial_row_index = 48
+    worksheet.set_row(initial_row_index, None, header_format)
+
+    initial_row_index += 1
+    for row_index in range(initial_row_index, initial_row_index + 3):
+        worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, options)
+
 def run(filename):
     original_data = utils.prepare_data_frame(filename, sheet_name=0)
     original_data = utils.drop_columns(original_data, contains='дата заполнения')
@@ -415,12 +476,12 @@ def run(filename):
     ders_questions = cols[ders_start_col:ders_start_col + ders_count]
     question_cols.extend(ders_questions)
 
-    additional_info = ['возраст', 'рост', 'текущий вес']
-    data = original_data[additional_info + question_cols]
-    data['возраст'] = data['возраст'].fillna(0).astype(int)
+    ed15_questions = cols[ed_start_col:ed_start_col + ed_count]
+    question_cols.extend(ed15_questions)
 
-    names = original_data[['фио', 'имя']].apply(lambda x: x[x.first_valid_index()], axis=1)
-    data.insert(0, 'фио', names)
+    additional_info = ['имя', 'фио', 'возраст', 'рост', 'текущий вес']
+    original_data = original_data[additional_info + question_cols]
+    
 
     # generate new question names
     questions_to_codes = {}
@@ -445,10 +506,14 @@ def run(filename):
     for number, q in enumerate(ders_questions):
         questions_to_codes[q] = 'ders_{}'.format(number + 1)
 
-    data = utils.replace_questions(data, questions_to_codes)
+    for number, q in enumerate(ed15_questions):
+        questions_to_codes[q] = 'ed15_{}'.format(number + 1)
+        codes_to_questions['ed15_{}'.format(number + 1)] = q
+
+    data = utils.replace_questions(original_data, questions_to_codes)
 
     # generate new answers names
-    replace_answers_dict = {
+    replace_answers_dict_edeq = {
         # EDEQ
         'ни одного': 0,
         '1-5 дней':	1,
@@ -467,40 +532,98 @@ def run(filename):
         'слегка': 2,
         'умеренно': 4,
         'существенно': 6,
+        np.nan: '',
+        'nan': '',
+        'NaN': '',
+        'мой ответ': 0
+    }
+    
+    replace_answers_dict_dass = {
         # DASS
         'вообще не относится ко мне': 0,
         'относилось ко мне до некоторой степени или некоторое время': 1,
         'относилось ко мне в значительной мере или значительную часть времени': 2,
         'относилось ко мне полностью или большую часть времени': 3,
+        np.nan: '',
+        'nan': '',
+        'NaN': ''
+    }
+    replace_answers_dict_ies = {
         # IES
         'полностью не согласен': 1,
         'не согласен': 2,
         'ни то, ни другое': 3,
         'согласен': 4,
         'полностью согласен': 5,
+        np.nan: '',
+        'nan': '',
+        'NaN': ''
+    }
+    replace_answers_dict_debq = {
         # DEBQ
         'никогда': 1,
         'очень редко': 2,
         'иногда': 3,
         'часто': 4,
         'очень часто': 5,
+        np.nan: '',
+        'nan': '',
+        'NaN': ''
+    }
+    replace_answers_dict_nvm = {
         # NVM
         'неверно': 0,
         'затрудняюсь ответить': 1,
         'верно': 2,
+        np.nan: '',
+        'nan': '',
+        'NaN': ''
+    }
+
+    replace_answers_dict_ders = {
         # DERS
         'почти никогда (0-10%)': 1,
         'иногда (11-35%)': 2,
         'примерно половину времени (36-65%)': 3,
         'большую часть времени (66-90%)': 4,
-        'почти всегда (91-100%)': 5
+        'почти всегда (91-100%)': 5,
+        np.nan: '',
+        'nan': '',
+        'NaN': ''
     }
+
+    replace_answers_dict_ed15 = {
+        'никогда': 0,
+        'редко': 1,
+        'изредка': 2,
+        'иногда': 3,
+        'часто': 4,
+        'очень часто': 5,
+        'всегда': 6,
+        np.nan: '',
+        'nan': '',
+        'NaN': ''
+    }
+
+    replace_answers_dict_ed15_back = {val: key for (key, val) in replace_answers_dict_ed15.items()}
 
     inverted_columns = ['IES_1', 'IES_2', 'IES_3', 'IES_7', 'IES_8', 'IES_9', 'IES_10', 'DEBQ_31', 'DERS_1', 'DERS_4', 'DERS_6']
     for index, col in enumerate(inverted_columns):
         inverted_columns[index] = col.lower()
     
-    data = utils.replace_answers(data, replace_answers_dict)
+    edeq_data = utils.replace_answers(data[['edeq_{}'.format(i) for i in range(1, edeq_count + 1)]], replace_answers_dict_edeq)
+    dass_data = utils.replace_answers(data[['dass_{}'.format(i) for i in range(1, dass_count + 1)]], replace_answers_dict_dass)
+    ies_data = utils.replace_answers(data[['ies_{}'.format(i) for i in range(1, ies_count + 1)]], replace_answers_dict_ies)
+    debq_data = utils.replace_answers(data[['debq_{}'.format(i) for i in range(1, debq_count + 1)]], replace_answers_dict_debq)
+    nvm_data = utils.replace_answers(data[['nvm_{}'.format(i) for i in range(1, nvm_count + 1)]], replace_answers_dict_nvm)
+    ders_data = utils.replace_answers(data[['ders_{}'.format(i) for i in range(1, ders_count + 1)]], replace_answers_dict_ders)
+    ed15_data = utils.replace_answers(data[['ed15_{}'.format(i) for i in range(1, ed_count + 1)]], replace_answers_dict_ed15)
+
+    data = pd.concat([edeq_data, dass_data, ies_data, debq_data, nvm_data, ders_data, ed15_data], axis=1)
+    data['возраст'] = original_data['возраст'].fillna(0).astype(int)
+
+    names = original_data[['фио', 'имя']].apply(lambda x: x[x.first_valid_index()], axis=1)
+    data.insert(0, 'фио', names)
 
     replace_inverted_answers_dict = {
         1: 5,
@@ -558,6 +681,21 @@ def run(filename):
     calc_debq(data, general_res)
     calc_nvm(data, general_res)
     calc_ders(data, general_res)
+    calc_ed15(data, general_res)
+
+    def format_ed15_cell(x):
+        if x == '':
+            return x
+        if 'например' in x:
+            return '0'
+        return str(replace_answers_dict_ed15_back[int(x)])
+
+    cols = ['ed15_{}'.format(i) for i in range(1, 16)]
+    for c in cols:
+        question = codes_to_questions[c]
+        question = question[0].upper() + question[1:]
+        codes_to_questions[c] = question
+        general_res[codes_to_questions[c]] = data[c].apply(format_ed15_cell)
 
     def upper_first_letters(s):
         words = s.split()
@@ -608,6 +746,179 @@ def run(filename):
     format_nvm(worksheet, general_res, header_format, outlier_format, blank_format)
     format_debq(worksheet, general_res, header_format, outlier_format, blank_format)
     format_ders(worksheet, general_res, header_format, outlier_format, blank_format)
+    format_ed15(worksheet, general_res, header_format, outlier_format, blank_format)
+
+    # additional info for ED-15
+    # head
+    cell_format = workbook.add_format(
+        {
+            'font_color': 'red', 
+            'bold': True,
+            'font_size': 11,
+            'font_name': 'Calibri'
+            }
+            )
+    worksheet.write('A70', 'Нормы для ED-15', cell_format)
+
+    cell_format = workbook.add_format({'bold': True, 'align': 'center'})
+    worksheet.merge_range('B70:C70', 'Здоровые', cell_format)
+    worksheet.merge_range('D70:E70', 'Здоровые', cell_format)
+    worksheet.merge_range('F70:G70', 'Нервная анорексия', cell_format)
+    worksheet.merge_range('H70:I70', 'Нервная анорексия', cell_format)
+    worksheet.merge_range('J70:K70', 'Булимия', cell_format)
+    worksheet.merge_range('L70:M70', 'Булимия', cell_format)
+    worksheet.merge_range('N70:O70', 'НРПП', cell_format)
+    worksheet.merge_range('P70:Q70', 'НРПП', cell_format)
+
+    cell_format = workbook.add_format()
+    # first row
+    worksheet.write('B71', 'Среднее', cell_format)
+    worksheet.write('C71', 'СКО', cell_format)
+    worksheet.write('D71', 'Нижняя граница', cell_format)
+    worksheet.write('E71', 'Верхняя граница', cell_format)
+    worksheet.write('F71', 'Среднее', cell_format)
+    worksheet.write('G71', 'СКО', cell_format)
+    worksheet.write('H71', 'Нижняя граница', cell_format)
+    worksheet.write('I71', 'Верхняя граница', cell_format)
+    worksheet.write('J71', 'Среднее', cell_format)
+    worksheet.write('K71', 'СКО', cell_format)
+    worksheet.write('L71', 'Нижняя граница', cell_format)
+    worksheet.write('M71', 'Верхняя граница', cell_format)
+    worksheet.write('N71', 'Среднее', cell_format)
+    worksheet.write('O71', 'СКО', cell_format)
+    worksheet.write('P71', 'Нижняя граница', cell_format)
+    worksheet.write('Q71', 'Верхняя граница', cell_format)
+
+    # second row
+    worksheet.write('A72', 'Озабоченность весом и формой тела', cell_format)
+    worksheet.write('B72', '1,79', cell_format)
+    worksheet.write('C72', '1,49', cell_format)
+    worksheet.write('D72', '0,3', cell_format)
+    worksheet.write('E72', '3,28', cell_format)
+    worksheet.write('F72', '3,93', cell_format)
+    worksheet.write('G72', '1,35', cell_format)
+    worksheet.write('H72', '2,58', cell_format)
+    worksheet.write('I72', '5,28', cell_format)
+    worksheet.write('J72', '4,58', cell_format)
+    worksheet.write('K72', '0,87', cell_format)
+    worksheet.write('L72', '3,71', cell_format)
+    worksheet.write('M72', '5,45', cell_format)
+    worksheet.write('N72', '3,77', cell_format)
+    worksheet.write('O72', '1,27', cell_format)
+    worksheet.write('P72', '2,5', cell_format)
+    worksheet.write('Q72', '5,04', cell_format)
+
+    # # third row
+    worksheet.write('A73', 'Озабоченность питанием', cell_format)
+    worksheet.write('B73', '2,44', cell_format)
+    worksheet.write('C73', '1,37', cell_format)
+    worksheet.write('D73', '1,07', cell_format)
+    worksheet.write('E73', '3,81', cell_format)
+    worksheet.write('F73', '4,66', cell_format)
+    worksheet.write('G73', '0,91', cell_format)
+    worksheet.write('H73', '3,75', cell_format)
+    worksheet.write('I73', '5,57', cell_format)
+    worksheet.write('J73', '4,33', cell_format)
+    worksheet.write('K73', '1,1', cell_format)
+    worksheet.write('L73', '3,23', cell_format)
+    worksheet.write('M73', '5,43', cell_format)
+    worksheet.write('N73', '3,84', cell_format)
+    worksheet.write('O73', '0,86', cell_format)
+    worksheet.write('P73', '2,98', cell_format)
+    worksheet.write('Q73', '4,7', cell_format)
+
+    # # fourth row
+    worksheet.write('A74', 'Общий балл', cell_format)
+    worksheet.write('B74', '2,05', cell_format)
+    worksheet.write('C74', '1,33', cell_format)
+    worksheet.write('D74', '0,72', cell_format)
+    worksheet.write('E74', '3,38', cell_format)
+    worksheet.write('F74', '4,22', cell_format)
+    worksheet.write('G74', '1,14', cell_format)
+    worksheet.write('H74', '3,08', cell_format)
+    worksheet.write('I74', '5,36', cell_format)
+    worksheet.write('J74', '4,48', cell_format)
+    worksheet.write('K74', '0,9', cell_format)
+    worksheet.write('L74', '3,58', cell_format)
+    worksheet.write('M74', '5,38', cell_format)
+    worksheet.write('N74', '3,8', cell_format)
+    worksheet.write('O74', '0,89', cell_format)
+    worksheet.write('P74', '2,91', cell_format)
+    worksheet.write('Q74', '4,69', cell_format)
+
+
+    # additional sheet
+    summary_cols = ['Ограничение питания', 'Избегание питания', 'Избегание пищи', 'Правила питания', 'Пустой желудок', 
+    'Озабоченность пищей, питанием или калориями', 'Страх потери контроля над питанием', 'Питание втайне от других', 
+    'Питание в социальном контексте', 'Чувство вины в связи с питанием', 'Плоский живот', 'Озабоченность формой тела или весом', 
+    'Значение формы тела', 'Страх набора веса', 'Неудовлетворённость формой тела', 'Дискомфорт при виде своего тела', 
+    'Избегание демонстрации тела', 'Ощущение полноты', 'Важность веса', 'Реакция на просьбу взвешиваться', 'Озабоченность формой тела или весом',
+    'Неудовлетворённость весом', 'Желание сбросить вес']
+
+    capital_codes = ['EDEQ_1', 'EDEQ_2', 'EDEQ_3', 
+    'EDEQ_4', 'EDEQ_5', 'EDEQ_7', 'EDEQ_9', 'EDEQ_19', 'EDEQ_21', 'EDEQ_20', 'EDEQ_6', 'EDEQ_8', 'EDEQ_23', 'EDEQ_10', 
+    'EDEQ_26', 'EDEQ_27', 'EDEQ_28', 'EDEQ_11', 'EDEQ_22', 'EDEQ_24', 'EDEQ_8', 'EDEQ_25', 'EDEQ_12']
+
+    codes = [code.lower() for code in capital_codes]
+
+    questions = [codes_to_questions[code] for code in codes]
+
+
+
+
+    additional_data_frame = original_data[questions]
+    names = original_data[['фио', 'имя']].apply(lambda x: x[x.first_valid_index()], axis=1).apply(upper_first_letters)
+    additional_data_frame.insert(0, 'фио', names)
+    additional_data_frame = utils.replace_questions(additional_data_frame, questions_to_codes)
+    additional_data_frame = utils.replace_answers(additional_data_frame, replace_answers_dict_edeq)
+
+    additional_data = additional_data_frame.values
+
+    data = np.array([
+        ['ФИО'] + summary_cols
+    ])
+    additional_data = np.concatenate([data, additional_data], axis=0)
+
+    additional_data_frame = pd.DataFrame(data=additional_data)
+    additional_data_frame.to_excel(writer, index=False, sheet_name='additional')
+
+    worksheet = writer.sheets['additional']
+    # Create a format to use in the merged range.
+    merge_format = workbook.add_format({
+        'bold': 1,
+        'border': 1,
+        'align': 'center',
+        'valign': 'vcenter',
+        'fg_color': '#d9d2e9'})
+    merge_format.set_font_size(10)
+    merge_format.set_font_name('Arial')
+
+
+    # Format cells.
+    worksheet.merge_range('B1:F1', 'Ограничения', merge_format)
+    worksheet.merge_range('G1:K1', 'Беспокойство о питании', merge_format)
+    worksheet.merge_range('L1:S1', 'Беспокойство о форме тела', merge_format)
+    worksheet.merge_range('T1:X1', 'Беспокойство о весе', merge_format)
+
+    cell_format = workbook.add_format({'fg_color': '#ead1dc', 'text_wrap': True})
+    cell_format.set_font_size(10)
+    cell_format.set_font_name('Arial')
+    worksheet.write('F2', 'Пустой желудок', cell_format)
+    worksheet.write('K2', 'Чувство вины в связи с питанием', cell_format)
+    worksheet.write('S2', 'Ощущение полноты', cell_format)
+    worksheet.write('X2', 'Желание сбросить вес', cell_format)
+
+    row_format = workbook.add_format({'text_wrap': True})
+    row_format.set_font_size(10)
+    row_format.set_font_name('Arial')
+    worksheet.set_row(1, 80, row_format)
+
+    col_format = workbook.add_format()
+    col_format.set_font_size(10)
+    col_format.set_font_name('Arial')
+    worksheet.set_column(0, 0, 30, col_format)
+    worksheet.set_column(1, len(summary_cols), 10, col_format)
+
 
     # Close the Pandas Excel writer and output the Excel file.
     writer.save()

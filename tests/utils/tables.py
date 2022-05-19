@@ -9,7 +9,7 @@ def prepare_data_frame(filename, sheet_name=None):
     return df
 
 def replace_answers(table_df, answers_dict):
-    df = table_df.replace(answers_dict)
+    df = table_df.astype(object).replace(answers_dict)
     return df
 
 def replace_questions(table_df, questions_dict):
