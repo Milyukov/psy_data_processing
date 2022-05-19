@@ -757,6 +757,44 @@ def run(filename):
     additional_data_frame = pd.DataFrame(data=additional_data)
     additional_data_frame.to_excel(writer, index=False, sheet_name='additional')
 
+    worksheet = writer.sheets['additional']
+    # Create a format to use in the merged range.
+    merge_format = workbook.add_format({
+        'bold': 1,
+        'border': 1,
+        'align': 'center',
+        'valign': 'vcenter',
+        'fg_color': '#d9d2e9'})
+    merge_format.set_font_size(10)
+    merge_format.set_font_name('Arial')
+
+
+    # Format cells.
+    worksheet.merge_range('B1:F1', 'Ограничения', merge_format)
+    worksheet.merge_range('G1:K1', 'Беспокойство о питании', merge_format)
+    worksheet.merge_range('L1:S1', 'Беспокойство о форме тела', merge_format)
+    worksheet.merge_range('T1:X1', 'Беспокойство о весе', merge_format)
+
+    cell_format = workbook.add_format({'fg_color': '#ead1dc', 'text_wrap': True})
+    cell_format.set_font_size(10)
+    cell_format.set_font_name('Arial')
+    worksheet.write('F2', 'Пустой желудок', cell_format)
+    worksheet.write('K2', 'Чувство вины в связи с питанием', cell_format)
+    worksheet.write('S2', 'Ощущение полноты', cell_format)
+    worksheet.write('X2', 'Желание сбросить вес', cell_format)
+
+    row_format = workbook.add_format({'text_wrap': True})
+    row_format.set_font_size(10)
+    row_format.set_font_name('Arial')
+    worksheet.set_row(1, 80, row_format)
+
+    col_format = workbook.add_format()
+    col_format.set_font_size(10)
+    col_format.set_font_name('Arial')
+    worksheet.set_column(0, 0, 30, col_format)
+    worksheet.set_column(1, len(summary_cols), 10, col_format)
+
+
     # Close the Pandas Excel writer and output the Excel file.
     writer.save()
 
