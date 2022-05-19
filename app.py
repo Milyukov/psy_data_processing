@@ -748,6 +748,105 @@ def run(filename):
     format_ders(worksheet, general_res, header_format, outlier_format, blank_format)
     format_ed15(worksheet, general_res, header_format, outlier_format, blank_format)
 
+    # additional info for ED-15
+    # head
+    cell_format = workbook.add_format(
+        {
+            'font_color': 'red', 
+            'bold': True,
+            'font_size': 11,
+            'font_name': 'Calibri'
+            }
+            )
+    worksheet.write('A70', 'Нормы для ED-15', cell_format)
+
+    cell_format = workbook.add_format({'bold': True, 'align': 'center'})
+    worksheet.merge_range('B70:C70', 'Здоровые', cell_format)
+    worksheet.merge_range('D70:E70', 'Здоровые', cell_format)
+    worksheet.merge_range('F70:G70', 'Нервная анорексия', cell_format)
+    worksheet.merge_range('H70:I70', 'Нервная анорексия', cell_format)
+    worksheet.merge_range('J70:K70', 'Булимия', cell_format)
+    worksheet.merge_range('L70:M70', 'Булимия', cell_format)
+    worksheet.merge_range('N70:O70', 'НРПП', cell_format)
+    worksheet.merge_range('P70:Q70', 'НРПП', cell_format)
+
+    cell_format = workbook.add_format()
+    # first row
+    worksheet.write('B71', 'Среднее', cell_format)
+    worksheet.write('C71', 'СКО', cell_format)
+    worksheet.write('D71', 'Нижняя граница', cell_format)
+    worksheet.write('E71', 'Верхняя граница', cell_format)
+    worksheet.write('F71', 'Среднее', cell_format)
+    worksheet.write('G71', 'СКО', cell_format)
+    worksheet.write('H71', 'Нижняя граница', cell_format)
+    worksheet.write('I71', 'Верхняя граница', cell_format)
+    worksheet.write('J71', 'Среднее', cell_format)
+    worksheet.write('K71', 'СКО', cell_format)
+    worksheet.write('L71', 'Нижняя граница', cell_format)
+    worksheet.write('M71', 'Верхняя граница', cell_format)
+    worksheet.write('N71', 'Среднее', cell_format)
+    worksheet.write('O71', 'СКО', cell_format)
+    worksheet.write('P71', 'Нижняя граница', cell_format)
+    worksheet.write('Q71', 'Верхняя граница', cell_format)
+
+    # second row
+    worksheet.write('A72', 'Озабоченность весом и формой тела', cell_format)
+    worksheet.write('B72', '1,79', cell_format)
+    worksheet.write('C72', '1,49', cell_format)
+    worksheet.write('D72', '0,3', cell_format)
+    worksheet.write('E72', '3,28', cell_format)
+    worksheet.write('F72', '3,93', cell_format)
+    worksheet.write('G72', '1,35', cell_format)
+    worksheet.write('H72', '2,58', cell_format)
+    worksheet.write('I72', '5,28', cell_format)
+    worksheet.write('J72', '4,58', cell_format)
+    worksheet.write('K72', '0,87', cell_format)
+    worksheet.write('L72', '3,71', cell_format)
+    worksheet.write('M72', '5,45', cell_format)
+    worksheet.write('N72', '3,77', cell_format)
+    worksheet.write('O72', '1,27', cell_format)
+    worksheet.write('P72', '2,5', cell_format)
+    worksheet.write('Q72', '5,04', cell_format)
+
+    # # third row
+    worksheet.write('A73', 'Озабоченность питанием', cell_format)
+    worksheet.write('B73', '2,44', cell_format)
+    worksheet.write('C73', '1,37', cell_format)
+    worksheet.write('D73', '1,07', cell_format)
+    worksheet.write('E73', '3,81', cell_format)
+    worksheet.write('F73', '4,66', cell_format)
+    worksheet.write('G73', '0,91', cell_format)
+    worksheet.write('H73', '3,75', cell_format)
+    worksheet.write('I73', '5,57', cell_format)
+    worksheet.write('J73', '4,33', cell_format)
+    worksheet.write('K73', '1,1', cell_format)
+    worksheet.write('L73', '3,23', cell_format)
+    worksheet.write('M73', '5,43', cell_format)
+    worksheet.write('N73', '3,84', cell_format)
+    worksheet.write('O73', '0,86', cell_format)
+    worksheet.write('P73', '2,98', cell_format)
+    worksheet.write('Q73', '4,7', cell_format)
+
+    # # fourth row
+    worksheet.write('A74', 'Общий балл', cell_format)
+    worksheet.write('B74', '2,05', cell_format)
+    worksheet.write('C74', '1,33', cell_format)
+    worksheet.write('D74', '0,72', cell_format)
+    worksheet.write('E74', '3,38', cell_format)
+    worksheet.write('F74', '4,22', cell_format)
+    worksheet.write('G74', '1,14', cell_format)
+    worksheet.write('H74', '3,08', cell_format)
+    worksheet.write('I74', '5,36', cell_format)
+    worksheet.write('J74', '4,48', cell_format)
+    worksheet.write('K74', '0,9', cell_format)
+    worksheet.write('L74', '3,58', cell_format)
+    worksheet.write('M74', '5,38', cell_format)
+    worksheet.write('N74', '3,8', cell_format)
+    worksheet.write('O74', '0,89', cell_format)
+    worksheet.write('P74', '2,91', cell_format)
+    worksheet.write('Q74', '4,69', cell_format)
+
+
     # additional sheet
     summary_cols = ['Ограничение питания', 'Избегание питания', 'Избегание пищи', 'Правила питания', 'Пустой желудок', 
     'Озабоченность пищей, питанием или калориями', 'Страх потери контроля над питанием', 'Питание втайне от других', 
