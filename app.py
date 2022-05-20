@@ -1,5 +1,3 @@
-from cmath import isnan
-from socket import errorTab
 import tests.utils.tables as utils
 import pandas as pd
 import numpy as np
@@ -554,10 +552,7 @@ def run(filename):
         'не согласен': 2,
         'ни то, ни другое': 3,
         'согласен': 4,
-        'полностью согласен': 5,
-        np.nan: '',
-        'nan': '',
-        'NaN': ''
+        'полностью согласен': 5
     }
     replace_answers_dict_debq = {
         # DEBQ
@@ -565,10 +560,7 @@ def run(filename):
         'очень редко': 2,
         'иногда': 3,
         'часто': 4,
-        'очень часто': 5,
-        np.nan: '',
-        'nan': '',
-        'NaN': ''
+        'очень часто': 5
     }
     replace_answers_dict_nvm = {
         # NVM
