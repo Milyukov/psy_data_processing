@@ -6,7 +6,7 @@ import sys
 import re
 
 # EDEQ
-edeq_start_col = 7
+edeq_start_col = 2
 edeq_count = 33
 
 # DASS
@@ -452,6 +452,9 @@ def format_ed15(worksheet, general_res, header_format, outlier_format, blank_for
 def run(filename):
     original_data = utils.prepare_data_frame(filename, sheet_name=0)
     original_data = utils.drop_columns(original_data, contains='дата заполнения')
+    original_data = utils.drop_columns(original_data, contains='этап')
+    original_data = utils.drop_columns(original_data, contains='название клиента')
+    original_data = utils.drop_columns(original_data, contains='город проживания')
     cols = original_data.columns.values
 
     # get questions names
@@ -478,7 +481,7 @@ def run(filename):
     ed15_questions = cols[ed_start_col:ed_start_col + ed_count]
     question_cols.extend(ed15_questions)
 
-    additional_info = ['имя', 'фио', 'возраст', 'рост', 'текущий вес']
+    additional_info = ['фио', 'возраст']
     original_data = original_data[additional_info + question_cols]
     
 
@@ -612,7 +615,7 @@ def run(filename):
     data = pd.concat([edeq_data, dass_data, ies_data, debq_data, nvm_data, ders_data, ed15_data], axis=1)
     data['возраст'] = original_data['возраст'].fillna(0).astype(int)
 
-    names = original_data[['фио', 'имя']].apply(lambda x: x[x.first_valid_index()], axis=1)
+    names = original_data['фио']
     data.insert(0, 'фио', names)
 
     replace_inverted_answers_dict = {
@@ -863,7 +866,7 @@ def run(filename):
 
 
     additional_data_frame = original_data[questions]
-    names = original_data[['фио', 'имя']].apply(lambda x: x[x.first_valid_index()], axis=1).apply(upper_first_letters)
+    names = original_data['фио'].apply(upper_first_letters)
     additional_data_frame.insert(0, 'фио', names)
     additional_data_frame = utils.replace_questions(additional_data_frame, questions_to_codes)
     additional_data_frame = utils.replace_answers(additional_data_frame, replace_answers_dict_edeq)
