@@ -1,5 +1,4 @@
-from cmath import isnan
-from socket import errorTab
+from sre_compile import isstring
 import tests.utils.tables as utils
 import pandas as pd
 import numpy as np
@@ -554,10 +553,7 @@ def run(filename):
         'не согласен': 2,
         'ни то, ни другое': 3,
         'согласен': 4,
-        'полностью согласен': 5,
-        np.nan: '',
-        'nan': '',
-        'NaN': ''
+        'полностью согласен': 5
     }
     replace_answers_dict_debq = {
         # DEBQ
@@ -565,10 +561,7 @@ def run(filename):
         'очень редко': 2,
         'иногда': 3,
         'часто': 4,
-        'очень часто': 5,
-        np.nan: '',
-        'nan': '',
-        'NaN': ''
+        'очень часто': 5
     }
     replace_answers_dict_nvm = {
         # NVM
@@ -599,10 +592,7 @@ def run(filename):
         'иногда': 3,
         'часто': 4,
         'очень часто': 5,
-        'всегда': 6,
-        np.nan: '',
-        'nan': '',
-        'NaN': ''
+        'всегда': 6
     }
 
     replace_answers_dict_ed15_back = {val: key for (key, val) in replace_answers_dict_ed15.items()}
@@ -683,19 +673,25 @@ def run(filename):
     calc_ders(data, general_res)
     calc_ed15(data, general_res)
 
-    def format_ed15_cell(x):
-        if x == '':
-            return x
+    def format_ed15_cell(x, index):
+        x = str(x)
+        if x == '' or x == 'nan':
+            return ''
         if 'например' in x:
             return '0'
-        return str(replace_answers_dict_ed15_back[int(x)])
+        if index < 10:
+            if '.' in x:
+                x = float(x)
+            return str(replace_answers_dict_ed15_back[int(x)])
+        else:
+            return x
 
     cols = ['ed15_{}'.format(i) for i in range(1, 16)]
-    for c in cols:
+    for index, c in enumerate(cols):
         question = codes_to_questions[c]
         question = question[0].upper() + question[1:]
         codes_to_questions[c] = question
-        general_res[codes_to_questions[c]] = data[c].apply(format_ed15_cell)
+        general_res[codes_to_questions[c]] = data[c].apply(lambda x: format_ed15_cell(x, index))
 
     def upper_first_letters(s):
         words = s.split()
