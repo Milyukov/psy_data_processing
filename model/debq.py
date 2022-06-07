@@ -4,8 +4,8 @@ import numpy as np
 
 class Debq(Quiz):
 
-    def __init__(self, start_col, count, workbook) -> None:
-        super().__init__(start_col, count)
+    def __init__(self, start_col, count, columns, workbook, worksheet) -> None:
+        super().__init__(start_col, count, columns, worksheet)
         self.header_format = workbook.add_format({'bg_color': 'yellow'})
         outlier_format = workbook.add_format({'align': 'left'})
         self.options = {
@@ -38,10 +38,10 @@ class Debq(Quiz):
         self.data_frame[scale_name] = self.data_frame[scale_name].apply(
             lambda x: '{:.2f}'.format(x) + " (норма: 2.7)" if not np.isnan(x) else '')
 
-    def format(self, worksheet, general_res):
+    def format(self):
         initial_row_index = 30
-        worksheet.set_row(initial_row_index, None, self.header_format)
+        self.worksheet.set_row(initial_row_index, None, self.header_format)
 
         initial_row_index += 1
         for row_index in range(initial_row_index, initial_row_index + 3):
-            worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, self.options)
+            self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.options)

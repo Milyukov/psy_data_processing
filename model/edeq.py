@@ -3,8 +3,8 @@ import pandas as pd
 
 class Edeq(Quiz):
 
-    def __init__(self, start_col, count, workbook) -> None:
-        super().__init__(start_col, count)
+    def __init__(self, start_col, count, columns, workbook, worksheet) -> None:
+        super().__init__(start_col, count, columns, worksheet)
         self.header_format = workbook.add_format({'bg_color': 'yellow'})
         outlier_format = workbook.add_format({'bg_color': '#FAA9A5', 'align': 'left'})
         blank_format = workbook.add_format({'align': 'left', 'num_format': '0'})
@@ -51,36 +51,36 @@ class Edeq(Quiz):
             cols[i] = col.lower()
         self.data_frame['EDEQ_Общий балл'] = data[cols].mean(axis=1, skipna=False)
 
-    def format(self, worksheet, general_res):
+    def format(self):
         row_index = 3
-        worksheet.set_row(row_index, None, self.header_format)
+        self.worksheet.set_row(row_index, None, self.header_format)
 
         self.options['minimum'] = -0.07
         self.options['maximum'] = 2.57
         row_index += 1
-        worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, self.blank)
-        worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, self.options)
+        self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.blank)
+        self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.options)
 
         self.options['minimum'] = -0.24
         self.options['maximum'] = 1.48
         row_index += 1
-        worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, self.blank)
-        worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, self.options)
+        self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.blank)
+        self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.options)
 
         self.options['minimum'] = 0.55
         self.options['maximum'] = 3.75
         row_index += 1
-        worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, self.blank)
-        worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, self.options)
+        self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.blank)
+        self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.options)
 
         self.options['minimum'] = 0.22
         self.options['maximum'] = 2.96
         row_index += 1
-        worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, self.blank)
-        worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, self.options)
+        self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.blank)
+        self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.options)
 
         self.options['minimum'] = 0.34
         self.options['maximum'] = 2.77
         row_index += 1
-        worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, self.blank)
-        worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, self.options)
+        self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.blank)
+        self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.options)

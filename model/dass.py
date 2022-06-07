@@ -4,8 +4,8 @@ import numpy as np
 
 class Dass(Quiz):
 
-    def __init__(self, start_col, count, workbook) -> None:
-        super().__init__(start_col, count)
+    def __init__(self, start_col, count, columns, workbook, worksheet) -> None:
+        super().__init__(start_col, count, columns, worksheet)
         self.header_format = workbook.add_format({'bg_color': 'yellow'})
         self.outlier_format = workbook.add_format({'align': 'left'})
         blank_format = workbook.add_format({'align': 'left', 'num_format': '0'})
@@ -31,7 +31,7 @@ class Dass(Quiz):
         suffixes = ['Нормативно', 'Неявно выражено', 'Средне выражено', 'Явно выражено', 'Крайне тяжело']
         locs = []
         for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
-            locs.append(self.data_frame['Депрессия'].between(min_val, max_val).values)
+            locs.append(self.data_frame['Депрессия'].replace('', 20000).between(min_val, max_val).values)
         for index, loc in enumerate(locs):
             self.data_frame.loc[loc, 'Депрессия'] = self.data_frame.loc[loc, 'Депрессия'].apply(lambda x: format_answer(x, suffixes[index]))
 
@@ -44,7 +44,7 @@ class Dass(Quiz):
         suffixes = ['Нормативно', 'Неявно выражено', 'Средне выражено', 'Явно выражено', 'Крайне тяжело']
         locs = []
         for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
-            locs.append(self.data_frame['Тревога'].between(min_val, max_val).values)
+            locs.append(self.data_frame['Тревога'].replace('', 20000).between(min_val, max_val).values)
         for index, loc in enumerate(locs):
             self.data_frame.loc[loc, 'Тревога'] = self.data_frame.loc[loc, 'Тревога'].apply(lambda x: format_answer(x, suffixes[index]))
 
@@ -58,14 +58,14 @@ class Dass(Quiz):
         suffixes = ['Нормативно', 'Неявно выражено', 'Средне выражено', 'Явно выражено', 'Крайне тяжело']
         locs = []
         for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
-            locs.append(self.data_frame['Стресс'].between(min_val, max_val).values)
+            locs.append(self.data_frame['Стресс'].replace('', 20000).between(min_val, max_val).values)
         for index, loc in enumerate(locs):
             self.data_frame.loc[loc, 'Стресс'] = self.data_frame.loc[loc, 'Стресс'].apply(lambda x: format_answer(x, suffixes[index]))
 
-    def format(self, worksheet, general_res):
+    def format(self):
         initial_row_index = 20
-        worksheet.set_row(initial_row_index, None, self.header_format)
+        self.worksheet.set_row(initial_row_index, None, self.header_format)
         initial_row_index += 1
         for row_index in range(initial_row_index, initial_row_index + 3):
-            worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, self.blank)
-            worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, {'format': self.outlier_format})
+            self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.blank)
+            self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, {'format': self.outlier_format})

@@ -6,6 +6,7 @@ from model.ies import Ies
 from model.debq import Debq
 from model.nvm import NVM
 from model.ders import Ders
+from model.ed15 import Ed
 
 import tests.utils.tables as utils
 import re
@@ -16,25 +17,16 @@ class Model:
         pass
 
     def process_data_frame(self):
-        # read and preprocess *.xlsx-file
-        self.original_data = utils.prepare_data_frame(self.input_filename, sheet_name=0)
-        self.original_data = utils.drop_columns(self.original_data, contains='дата заполнения')
-        columns = self.original_data.columns.values
-
         # get questions names
         question_cols = []
         questions = {}
         for q in self.quizes:
-            cols = self.quizes[q].get_cols(columns)
+            cols = self.quizes[q].get_cols()
             questions[q] = cols
             question_cols.extend(cols)
 
-        additional_info = ['возраст', 'рост', 'текущий вес']
-        self.data = self.original_data[additional_info + question_cols]
-        self.data['возраст'] = self.data['возраст'].fillna(0).astype(int)
-
-        names = self.original_data[['фио', 'имя']].apply(lambda x: x[x.first_valid_index()], axis=1)
-        self.data.insert(0, 'фио', names)
+        additional_info = ['имя', 'фио', 'возраст', 'рост', 'текущий вес']
+        self.original_data = self.original_data[additional_info + question_cols]
 
         # generate new question names
         self.questions_to_codes = {}
@@ -45,10 +37,10 @@ class Model:
                 self.questions_to_codes[q] = '{}_{}'.format(key, number + 1)
                 self.codes_to_questions['{}_{}'.format(key, number + 1)] = q
 
-        self.data = utils.replace_questions(self.data, self.questions_to_codes)
+        data = utils.replace_questions(self.original_data, self.questions_to_codes)
 
         # generate new answers names
-        replace_answers_dict = {
+        replace_answers_dict_edeq = {
             # EDEQ
             'ни одного': 0,
             '1-5 дней':	1,
@@ -67,40 +59,91 @@ class Model:
             'слегка': 2,
             'умеренно': 4,
             'существенно': 6,
+            np.nan: '',
+            'nan': '',
+            'NaN': '',
+            'мой ответ': 0
+        }
+        
+        replace_answers_dict_dass = {
             # DASS
             'вообще не относится ко мне': 0,
             'относилось ко мне до некоторой степени или некоторое время': 1,
             'относилось ко мне в значительной мере или значительную часть времени': 2,
             'относилось ко мне полностью или большую часть времени': 3,
+            np.nan: '',
+            'nan': '',
+            'NaN': ''
+        }
+        replace_answers_dict_ies = {
             # IES
             'полностью не согласен': 1,
             'не согласен': 2,
             'ни то, ни другое': 3,
             'согласен': 4,
-            'полностью согласен': 5,
+            'полностью согласен': 5
+        }
+        replace_answers_dict_debq = {
             # DEBQ
             'никогда': 1,
             'очень редко': 2,
             'иногда': 3,
             'часто': 4,
-            'очень часто': 5,
+            'очень часто': 5
+        }
+        replace_answers_dict_nvm = {
             # NVM
             'неверно': 0,
             'затрудняюсь ответить': 1,
             'верно': 2,
+            np.nan: '',
+            'nan': '',
+            'NaN': ''
+        }
+
+        replace_answers_dict_ders = {
             # DERS
             'почти никогда (0-10%)': 1,
             'иногда (11-35%)': 2,
             'примерно половину времени (36-65%)': 3,
             'большую часть времени (66-90%)': 4,
-            'почти всегда (91-100%)': 5
+            'почти всегда (91-100%)': 5,
+            np.nan: '',
+            'nan': '',
+            'NaN': ''
         }
+
+        replace_answers_dict_ed15 = {
+            'никогда': 0,
+            'редко': 1,
+            'изредка': 2,
+            'иногда': 3,
+            'часто': 4,
+            'очень часто': 5,
+            'всегда': 6
+        }
+
+        replace_answers_dict_ed15_back = {val: key for (key, val) in replace_answers_dict_ed15.items()}
 
         inverted_columns = ['IES_1', 'IES_2', 'IES_3', 'IES_7', 'IES_8', 'IES_9', 'IES_10', 'DEBQ_31', 'DERS_1', 'DERS_4', 'DERS_6']
         for index, col in enumerate(inverted_columns):
             inverted_columns[index] = col.lower()
-        
-        self.data = utils.replace_answers(self.data, replace_answers_dict)
+
+
+
+        edeq_data = utils.replace_answers(data[['edeq_{}'.format(i) for i in range(1, self.quizes['edeq'].count + 1)]], replace_answers_dict_edeq)
+        dass_data = utils.replace_answers(data[['dass_{}'.format(i) for i in range(1, self.quizes['dass'].count + 1)]], replace_answers_dict_dass)
+        ies_data = utils.replace_answers(data[['ies_{}'.format(i) for i in range(1, self.quizes['ies'].count + 1)]], replace_answers_dict_ies)
+        debq_data = utils.replace_answers(data[['debq_{}'.format(i) for i in range(1, self.quizes['debq'].count + 1)]], replace_answers_dict_debq)
+        nvm_data = utils.replace_answers(data[['nvm_{}'.format(i) for i in range(1, self.quizes['nvm'].count + 1)]], replace_answers_dict_nvm)
+        ders_data = utils.replace_answers(data[['ders_{}'.format(i) for i in range(1, self.quizes['ders'].count + 1)]], replace_answers_dict_ders)
+        ed15_data = utils.replace_answers(data[['ed15_{}'.format(i) for i in range(1, self.quizes['ed15'].count + 1)]], replace_answers_dict_ed15)
+
+        self.data = pd.concat([edeq_data, dass_data, ies_data, debq_data, nvm_data, ders_data, ed15_data], axis=1)
+        self.data['возраст'] = self.original_data['возраст'].fillna(0).astype(int)
+
+        names = self.original_data[['фио', 'имя']].apply(lambda x: x[x.first_valid_index()], axis=1)
+        self.data.insert(0, 'фио', names)
 
         replace_inverted_answers_dict = {
             1: 5,
@@ -154,34 +197,144 @@ class Model:
         self.data['фио'] = self.data['фио'].apply(upper_first_letters)
         self.general_res.set_axis(self.data['фио'], inplace=True)
 
+    def add_infor_for_ed15(self, workbook, worksheet):
+        # additional info for ED-15
+        # head
+        cell_format = workbook.add_format(
+            {
+                'font_color': 'red', 
+                'bold': True,
+                'font_size': 11,
+                'font_name': 'Calibri'
+                }
+                )
+        worksheet.write('A70', 'Нормы для ED-15', cell_format)
+
+        cell_format = workbook.add_format({'bold': True, 'align': 'center'})
+        worksheet.merge_range('B70:C70', 'Здоровые', cell_format)
+        worksheet.merge_range('D70:E70', 'Здоровые', cell_format)
+        worksheet.merge_range('F70:G70', 'Нервная анорексия', cell_format)
+        worksheet.merge_range('H70:I70', 'Нервная анорексия', cell_format)
+        worksheet.merge_range('J70:K70', 'Булимия', cell_format)
+        worksheet.merge_range('L70:M70', 'Булимия', cell_format)
+        worksheet.merge_range('N70:O70', 'НРПП', cell_format)
+        worksheet.merge_range('P70:Q70', 'НРПП', cell_format)
+
+        cell_format = workbook.add_format()
+        # first row
+        worksheet.write('B71', 'Среднее', cell_format)
+        worksheet.write('C71', 'СКО', cell_format)
+        worksheet.write('D71', 'Нижняя граница', cell_format)
+        worksheet.write('E71', 'Верхняя граница', cell_format)
+        worksheet.write('F71', 'Среднее', cell_format)
+        worksheet.write('G71', 'СКО', cell_format)
+        worksheet.write('H71', 'Нижняя граница', cell_format)
+        worksheet.write('I71', 'Верхняя граница', cell_format)
+        worksheet.write('J71', 'Среднее', cell_format)
+        worksheet.write('K71', 'СКО', cell_format)
+        worksheet.write('L71', 'Нижняя граница', cell_format)
+        worksheet.write('M71', 'Верхняя граница', cell_format)
+        worksheet.write('N71', 'Среднее', cell_format)
+        worksheet.write('O71', 'СКО', cell_format)
+        worksheet.write('P71', 'Нижняя граница', cell_format)
+        worksheet.write('Q71', 'Верхняя граница', cell_format)
+
+        # second row
+        worksheet.write('A72', 'Озабоченность весом и формой тела', cell_format)
+        worksheet.write('B72', '1,79', cell_format)
+        worksheet.write('C72', '1,49', cell_format)
+        worksheet.write('D72', '0,3', cell_format)
+        worksheet.write('E72', '3,28', cell_format)
+        worksheet.write('F72', '3,93', cell_format)
+        worksheet.write('G72', '1,35', cell_format)
+        worksheet.write('H72', '2,58', cell_format)
+        worksheet.write('I72', '5,28', cell_format)
+        worksheet.write('J72', '4,58', cell_format)
+        worksheet.write('K72', '0,87', cell_format)
+        worksheet.write('L72', '3,71', cell_format)
+        worksheet.write('M72', '5,45', cell_format)
+        worksheet.write('N72', '3,77', cell_format)
+        worksheet.write('O72', '1,27', cell_format)
+        worksheet.write('P72', '2,5', cell_format)
+        worksheet.write('Q72', '5,04', cell_format)
+
+        # # third row
+        worksheet.write('A73', 'Озабоченность питанием', cell_format)
+        worksheet.write('B73', '2,44', cell_format)
+        worksheet.write('C73', '1,37', cell_format)
+        worksheet.write('D73', '1,07', cell_format)
+        worksheet.write('E73', '3,81', cell_format)
+        worksheet.write('F73', '4,66', cell_format)
+        worksheet.write('G73', '0,91', cell_format)
+        worksheet.write('H73', '3,75', cell_format)
+        worksheet.write('I73', '5,57', cell_format)
+        worksheet.write('J73', '4,33', cell_format)
+        worksheet.write('K73', '1,1', cell_format)
+        worksheet.write('L73', '3,23', cell_format)
+        worksheet.write('M73', '5,43', cell_format)
+        worksheet.write('N73', '3,84', cell_format)
+        worksheet.write('O73', '0,86', cell_format)
+        worksheet.write('P73', '2,98', cell_format)
+        worksheet.write('Q73', '4,7', cell_format)
+
+        # # fourth row
+        worksheet.write('A74', 'Общий балл', cell_format)
+        worksheet.write('B74', '2,05', cell_format)
+        worksheet.write('C74', '1,33', cell_format)
+        worksheet.write('D74', '0,72', cell_format)
+        worksheet.write('E74', '3,38', cell_format)
+        worksheet.write('F74', '4,22', cell_format)
+        worksheet.write('G74', '1,14', cell_format)
+        worksheet.write('H74', '3,08', cell_format)
+        worksheet.write('I74', '5,36', cell_format)
+        worksheet.write('J74', '4,48', cell_format)
+        worksheet.write('K74', '0,9', cell_format)
+        worksheet.write('L74', '3,58', cell_format)
+        worksheet.write('M74', '5,38', cell_format)
+        worksheet.write('N74', '3,8', cell_format)
+        worksheet.write('O74', '0,89', cell_format)
+        worksheet.write('P74', '2,91', cell_format)
+        worksheet.write('Q74', '4,69', cell_format)
+
     def process(self, input_filename, output_filename, mode) -> None:
+        # generate data frame for quiz evaluation
+        self.input_filename = input_filename
+        self.original_data = utils.prepare_data_frame(self.input_filename, sheet_name=0)
+        self.original_data = utils.drop_columns(self.original_data, contains='дата заполнения')
+        columns = self.original_data.columns.values
+
         # Create a Pandas Excel writer using XlsxWriter as the engine.
         self.writer = pd.ExcelWriter(output_filename, engine='xlsxwriter')
 
         # Get the xlsxwriter workbook and worksheet objects.
         workbook = self.writer.book
+        empty_frame = pd.DataFrame()
+        empty_frame.to_excel(self.writer, index=False, sheet_name='general')
+        worksheet = self.writer.sheets['general']
 
         self.quizes = {}
         # EDEQ
-        self.quizes['edeq'] = Edeq(7, 33, workbook)
+        self.quizes['edeq'] = Edeq(7, 33, columns, workbook, worksheet)
 
         # DASS
-        self.quizes['dass'] = Dass(self.quizes['edeq'].ec, 21, workbook)
+        self.quizes['dass'] = Dass(self.quizes['edeq'].ec, 21, columns, workbook, worksheet)
 
         # IES
-        self.quizes['ies'] = Ies(self.quizes['dass'].ec, 23, workbook)
+        self.quizes['ies'] = Ies(self.quizes['dass'].ec, 23, columns, workbook, worksheet)
 
         # DEBQ
-        self.quizes['debq'] = Debq(self.quizes['ies'].ec, 33, workbook)
+        self.quizes['debq'] = Debq(self.quizes['ies'].ec, 33, columns, workbook, worksheet)
 
         # NVM
-        self.quizes['nvm'] = NVM(self.quizes['debq'].ec, 83, workbook)
+        self.quizes['nvm'] = NVM(self.quizes['debq'].ec, 83, columns, workbook, worksheet)
 
         # DERS
-        self.quizes['ders'] = Ders(self.quizes['nvm'].ec, 18, workbook)
+        self.quizes['ders'] = Ders(self.quizes['nvm'].ec, 18, columns, workbook, worksheet)
 
-        # generate data frame for quiz evaluation
-        self.input_filename = input_filename
+        # ED-15
+        self.quizes['ed15'] = Ed(self.quizes['ders'].ec, 15, columns, workbook, worksheet)
+
+        # preprocess *.xlsx-file
         client_data = self.process_data_frame()
 
         # calc the statistics
@@ -201,15 +354,10 @@ class Model:
         self.post_process_data()
 
         # Create a Pandas Excel writer using XlsxWriter as the engine.
-        writer = pd.ExcelWriter('result.xlsx', engine='xlsxwriter')
-        self.data.to_excel(writer, index=False, sheet_name='replaced')
+        self.data.to_excel(self.writer, index=False, sheet_name='replaced')
         self.general_res = self.general_res.transpose()
         self.general_res.reset_index(inplace=True)
-        self.general_res.to_excel(writer, index=False, sheet_name='general')
-
-        # Get the xlsxwriter workbook and worksheet objects.
-        workbook = writer.book
-        worksheet = writer.sheets['general']
+        self.general_res.to_excel(self.writer, index=False, sheet_name='general')
 
         # Add some cell formats.
         format_index = workbook.add_format({'text_wrap': True})
@@ -229,7 +377,9 @@ class Model:
 
         # format data
         for q in self.quizes.values():
-            q.format(worksheet, self.general_res)
+            q.format()
+
+        self.add_infor_for_ed15(workbook, worksheet)
 
         # Close the Pandas Excel writer and output the Excel file.
-        writer.save()
+        self.writer.save()
