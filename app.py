@@ -639,7 +639,7 @@ def run(filename):
         res = res.replace(',', '.')
         return float(res)
 
-    weight = data['edeq_29'].fillna(0).apply(format_weight)
+    weight = data['edeq_29'].replace('', 0).fillna(0).apply(format_weight)
 
     def format_height(val):
         val_str = '{}'.format(val)
@@ -654,7 +654,7 @@ def run(filename):
         else:
             return float(res) / 100.0
 
-    height = data['edeq_30'].fillna(0).apply(format_height)
+    height = data['edeq_30'].replace('', 0).fillna(0).apply(format_height)
     general_res.insert(1, 'ИМТ', weight.div(height.apply(lambda x: x ** 2)))
     calc_edeq(data, general_res)
 
@@ -697,6 +697,10 @@ def run(filename):
         general_res[codes_to_questions[c]] = data[c].apply(lambda x: format_ed15_cell(x, index))
 
     def upper_first_letters(s):
+        if not isinstance(s, str):
+            if np.isnan(s):
+                return ''
+            s = str(s)
         words = s.split()
         new_words = []
         for word in words:
