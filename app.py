@@ -634,25 +634,27 @@ def run(filename):
 
     def format_weight(val):
         val_str = '{}'.format(val)
-        res = re.search('\d*.*,*\d', val_str)
-        res = res.group()
-        res = res.replace(',', '.')
-        return float(res)
+        res = re.findall('\d*\.?,?\d+',val_str)
+        if len(res) > 0:
+            res = res[0].replace(',', '.')
+            return float(res)
+        return 0.0
 
     weight = data['edeq_29'].replace('', 0).fillna(0).apply(format_weight)
 
     def format_height(val):
         val_str = '{}'.format(val)
-        res = re.search('\d*.*,*\d', val_str)
-        res = res.group()
-        res = res.replace(',', '.')
-        if '.' in res:
-            integer_part, fraction = res.split('.')
-            if float(integer_part) >= 100:
+        res = re.findall('\d*\.?,?\d+',val_str)
+        if len(res) > 0:
+            res = res[0].replace(',', '.')
+            if '.' in res:
+                integer_part, fraction = res.split('.')
+                if float(integer_part) >= 100:
+                    return float(res) / 100.0
+                return float(res)
+            else:
                 return float(res) / 100.0
-            return float(res)
-        else:
-            return float(res) / 100.0
+        return 0.0
 
     height = data['edeq_30'].replace('', 0).fillna(0).apply(format_height)
     general_res.insert(1, 'ИМТ', weight.div(height.apply(lambda x: x ** 2)))
