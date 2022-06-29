@@ -37,29 +37,29 @@ def calc_edeq(data, edeq_res):
     cols = ['EDEQ_1', 'EDEQ_2', 'EDEQ_3', 'EDEQ_4', 'EDEQ_5']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    edeq_res['Ограничения питания'] = data[cols].mean(axis=1, skipna=False)
+    edeq_res['Ограничения питания'] = data[cols].replace('', 0).mean(axis=1, skipna=False)
 
     cols = ['EDEQ_7', 'EDEQ_9', 'EDEQ_19', 'EDEQ_20', 'EDEQ_21']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    edeq_res['Беспокойство о питании'] = data[cols].mean(axis=1, skipna=False)
+    edeq_res['Беспокойство о питании'] = data[cols].replace('', 0).mean(axis=1, skipna=False)
 
     cols = ['EDEQ_6', 'EDEQ_8', 'EDEQ_10', 'EDEQ_11', 'EDEQ_23', 'EDEQ_26', 'EDEQ_27', 'EDEQ_28']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    edeq_res['Беспокойство о фигуре'] = data[cols].mean(axis=1, skipna=False)
+    edeq_res['Беспокойство о фигуре'] = data[cols].replace('', 0).mean(axis=1, skipna=False)
 
     cols = ['EDEQ_8', 'EDEQ_12', 'EDEQ_22', 'EDEQ_24', 'EDEQ_25']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    edeq_res['Беспокойство о весе'] = data[cols].mean(axis=1, skipna=False)
+    edeq_res['Беспокойство о весе'] = data[cols].replace('', 0).mean(axis=1, skipna=False)
 
     cols = ['EDEQ_1', 'EDEQ_2', 'EDEQ_3', 'EDEQ_4', 'EDEQ_5', 'EDEQ_6', 'EDEQ_7', 'EDEQ_8', 
     'EDEQ_9', 'EDEQ_10', 'EDEQ_11', 'EDEQ_12', 'EDEQ_19', 'EDEQ_20', 'EDEQ_21', 'EDEQ_22', 
     'EDEQ_23', 'EDEQ_24', 'EDEQ_25', 'EDEQ_26', 'EDEQ_27', 'EDEQ_28']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    edeq_res['EDEQ_Общий балл'] = data[cols].mean(axis=1, skipna=False)
+    edeq_res['EDEQ_Общий балл'] = data[cols].replace('', 0).mean(axis=1, skipna=False)
 
 def calc_dass(data, dass_res):
 
@@ -115,26 +115,26 @@ def calc_ies(data, res):
     cols = ['IES_1', 'IES_2', 'IES_3', 'IES_4', 'IES_5', 'IES_6']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    res['Безусловное разрешение есть'] = data[cols].mean(axis=1)
+    res['Безусловное разрешение есть'] = data[cols].replace('', 0).mean(axis=1)
 
     cols = ['IES_7', 'IES_8', 'IES_9', 'IES_10', 'IES_11', 'IES_12', 'IES_13', 'IES_14']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    res['Прием пищи по физическим, а не эмоциональным причинам'] = data[cols].mean(axis=1)
+    res['Прием пищи по физическим, а не эмоциональным причинам'] = data[cols].replace('', 0).mean(axis=1)
 
     cols = ['IES_15', 'IES_16', 'IES_17', 'IES_18', 'IES_19', 'IES_20']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    res['Доверие внутренним ощущениям голода и сытости'] = data[cols].mean(axis=1)
+    res['Доверие внутренним ощущениям голода и сытости'] = data[cols].replace('', 0).mean(axis=1)
 
 
     cols = ['IES_21', 'IES_22', 'IES_23']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    res['Конгруэнтность "Тело/Выбор еды"'] = data[cols].mean(axis=1)
+    res['Конгруэнтность "Тело/Выбор еды"'] = data[cols].replace('', 0).mean(axis=1)
 
     cols = ['ies_{}'.format(i) for i in range(1, ies_count + 1)]
-    res['IES_Общий балл'] = data[cols].mean(axis=1)
+    res['IES_Общий балл'] = data[cols].replace('', 0).mean(axis=1)
 
 def calc_debq(data, res):
     res['Опросник стиля пищевого поведения / Голладский пищевой опросник (DEBQ)'] = ''
@@ -143,7 +143,7 @@ def calc_debq(data, res):
     cols = ['DEBQ_1', 'DEBQ_2', 'DEBQ_3', 'DEBQ_4', 'DEBQ_5', 'DEBQ_6', 'DEBQ_7', 'DEBQ_8', 'DEBQ_9', 'DEBQ_10']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    res[scale_name] = data[cols].mean(axis=1)
+    res[scale_name] = data[cols].replace('', 0).mean(axis=1)
     res[scale_name] = res[scale_name].apply(
         lambda x: '{:.2f}'.format(x) + " (норма: 2.4)" if not np.isnan(x) else '')
 
@@ -151,7 +151,7 @@ def calc_debq(data, res):
     cols = ['DEBQ_11', 'DEBQ_12', 'DEBQ_13', 'DEBQ_14', 'DEBQ_15', 'DEBQ_16', 'DEBQ_17', 'DEBQ_18', 'DEBQ_19', 'DEBQ_20', 'DEBQ_21', 'DEBQ_22', 'DEBQ_23']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    res[scale_name] = data[cols].mean(axis=1)
+    res[scale_name] = data[cols].replace('', 0).mean(axis=1)
     res[scale_name] = res[scale_name].apply(
         lambda x: '{:.2f}'.format(x) + " (норма: 1.8)" if not np.isnan(x) else '')
 
@@ -159,7 +159,7 @@ def calc_debq(data, res):
     cols = ['DEBQ_24', 'DEBQ_25', 'DEBQ_26', 'DEBQ_27', 'DEBQ_28', 'DEBQ_29', 'DEBQ_30', 'DEBQ_31', 'DEBQ_32', 'DEBQ_33']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    res[scale_name] = data[cols].mean(axis=1)
+    res[scale_name] = data[cols].replace('', 0).mean(axis=1)
     res[scale_name] = res[scale_name].apply(
         lambda x: '{:.2f}'.format(x) + " (норма: 2.7)" if not np.isnan(x) else '')
 
@@ -274,7 +274,7 @@ def calc_ed15(data, res):
     cols = ['ED15_2', 'ED15_4', 'ED15_5', 'ED15_6', 'ED15_9', 'ED15_10']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    res[scale_name] = data[cols].mean(axis=1)
+    res[scale_name] = data[cols].replace('', 0).mean(axis=1)
     res[scale_name] = res[scale_name].apply(
         lambda x: '{:.2f}'.format(x) if not np.isnan(x) else '')
 
@@ -282,7 +282,7 @@ def calc_ed15(data, res):
     cols = ['ED15_1', 'ED15_3', 'ED15_7', 'ED15_8']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    res[scale_name] = data[cols].mean(axis=1)
+    res[scale_name] = data[cols].replace('', 0).mean(axis=1)
     res[scale_name] = res[scale_name].apply(
         lambda x: '{:.2f}'.format(x) if not np.isnan(x) else '')
 
@@ -290,7 +290,7 @@ def calc_ed15(data, res):
     cols = ['ED15_1', 'ED15_2', 'ED15_3', 'ED15_4', 'ED15_5', 'ED15_6', 'ED15_7', 'ED15_8', 'ED15_9', 'ED15_10']
     for i, col in enumerate(cols):
         cols[i] = col.lower()
-    res[scale_name] = data[cols].mean(axis=1)
+    res[scale_name] = data[cols].replace('', 0).mean(axis=1)
     res[scale_name] = res[scale_name].apply(
         lambda x: '{:.2f}'.format(x) if not np.isnan(x) else '')
 
