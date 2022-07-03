@@ -459,7 +459,8 @@ def format_ed15(worksheet, general_res, header_format, outlier_format, blank_for
     for row_index in range(initial_row_index, initial_row_index + 3):
         worksheet.conditional_format(row_index, 1, row_index, len(general_res.columns) - 1, options)
 
-def run(filename):
+def run(filename, show_reference_option=1):
+    show_reference = show_reference_option == 0
     original_data = utils.prepare_data_frame(filename, sheet_name=0)
     original_data = utils.drop_columns(original_data, contains='дата заполнения')
     original_data = utils.drop_columns(original_data, contains='этап')
@@ -681,11 +682,11 @@ def run(filename):
     general_res = general_res.replace(np.nan, '')
     general_res = general_res.replace('nan', '')
 
-    calc_dass(data, general_res)
+    calc_dass(data, general_res, show_reference)
     calc_ies(data, general_res)
-    calc_debq(data, general_res)
+    calc_debq(data, general_res, show_reference)
     calc_nvm(data, general_res)
-    calc_ders(data, general_res)
+    calc_ders(data, general_res, show_reference)
     calc_ed15(data, general_res)
 
     def format_ed15_cell(x, index):
