@@ -61,12 +61,14 @@ def calc_edeq(data, edeq_res):
         cols[i] = col.lower()
     edeq_res['EDEQ_Общий балл'] = data[cols].replace('', 0).mean(axis=1, skipna=False)
 
-def calc_dass(data, dass_res):
+def calc_dass(data, dass_res, show_reference=True):
 
-    def format_answer(x, suffix):
+    def format_answer(x, suffix, use_suffix=True):
         if np.isnan(x):
             return ''
-        return "{:.0f} ({})".format(x, suffix)
+        if use_suffix:
+            return "{:.0f} ({})".format(x, suffix)
+        return "{:.0f}".format(x)
 
     dass_res['Шкала депрессии, тревоги и стресса (DASS-21)'] = ''
 
@@ -81,7 +83,7 @@ def calc_dass(data, dass_res):
     for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
         locs.append(dass_res['Депрессия'].replace('', 20000).between(min_val, max_val).values)
     for index, loc in enumerate(locs):
-        dass_res.loc[loc, 'Депрессия'] = dass_res.loc[loc, 'Депрессия'].apply(lambda x: format_answer(x, suffixes[index]))
+        dass_res.loc[loc, 'Депрессия'] = dass_res.loc[loc, 'Депрессия'].apply(lambda x: format_answer(x, suffixes[index], show_reference))
 
     cols = ['DASS_2', 'DASS_4', 'DASS_7', 'DASS_9', 'DASS_15', 'DASS_19', 'DASS_20']
     for i, col in enumerate(cols):
@@ -94,7 +96,7 @@ def calc_dass(data, dass_res):
     for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
         locs.append(dass_res['Тревога'].replace('', 20000).between(min_val, max_val).values)
     for index, loc in enumerate(locs):
-        dass_res.loc[loc, 'Тревога'] = dass_res.loc[loc, 'Тревога'].apply(lambda x: format_answer(x, suffixes[index]))
+        dass_res.loc[loc, 'Тревога'] = dass_res.loc[loc, 'Тревога'].apply(lambda x: format_answer(x, suffixes[index], show_reference))
 
     cols = ['DASS_1', 'DASS_6', 'DASS_8', 'DASS_11', 'DASS_12', 'DASS_14', 'DASS_18']
     for i, col in enumerate(cols):
@@ -108,7 +110,7 @@ def calc_dass(data, dass_res):
     for min_val, max_val, suffix in zip(min_vals, max_vals, suffixes):
         locs.append(dass_res['Стресс'].replace('', 20000).between(min_val, max_val).values)
     for index, loc in enumerate(locs):
-        dass_res.loc[loc, 'Стресс'] = dass_res.loc[loc, 'Стресс'].apply(lambda x: format_answer(x, suffixes[index]))
+        dass_res.loc[loc, 'Стресс'] = dass_res.loc[loc, 'Стресс'].apply(lambda x: format_answer(x, suffixes[index], show_reference))
 
 def calc_ies(data, res):
     res['Шкала интуитивного питания  (IES-23)'] = ''
@@ -136,7 +138,15 @@ def calc_ies(data, res):
     cols = ['ies_{}'.format(i) for i in range(1, ies_count + 1)]
     res['IES_Общий балл'] = data[cols].replace('', 0).mean(axis=1)
 
-def calc_debq(data, res):
+def calc_debq(data, res, show_reference=True):
+
+    def format_answer(x, suffix, use_suffix=True):
+        if np.isnan(x):
+            return ''
+        if use_suffix:
+            return "{:.2f} ({})".format(x, suffix)
+        return "{:.2f}".format(x)
+
     res['Опросник стиля пищевого поведения / Голладский пищевой опросник (DEBQ)'] = ''
 
     scale_name = 'Ограничительный'
@@ -145,7 +155,7 @@ def calc_debq(data, res):
         cols[i] = col.lower()
     res[scale_name] = data[cols].replace('', 0).mean(axis=1)
     res[scale_name] = res[scale_name].apply(
-        lambda x: '{:.2f}'.format(x) + " (норма: 2.4)" if not np.isnan(x) else '')
+        lambda x: format_answer(x, "норма: 2.4", show_reference))
 
     scale_name = 'Эмоциональный'
     cols = ['DEBQ_11', 'DEBQ_12', 'DEBQ_13', 'DEBQ_14', 'DEBQ_15', 'DEBQ_16', 'DEBQ_17', 'DEBQ_18', 'DEBQ_19', 'DEBQ_20', 'DEBQ_21', 'DEBQ_22', 'DEBQ_23']
@@ -153,7 +163,7 @@ def calc_debq(data, res):
         cols[i] = col.lower()
     res[scale_name] = data[cols].replace('', 0).mean(axis=1)
     res[scale_name] = res[scale_name].apply(
-        lambda x: '{:.2f}'.format(x) + " (норма: 1.8)" if not np.isnan(x) else '')
+        lambda x: format_answer(x, "норма: 1.8", show_reference))
 
     scale_name = 'Экстернальный'
     cols = ['DEBQ_24', 'DEBQ_25', 'DEBQ_26', 'DEBQ_27', 'DEBQ_28', 'DEBQ_29', 'DEBQ_30', 'DEBQ_31', 'DEBQ_32', 'DEBQ_33']
@@ -161,7 +171,7 @@ def calc_debq(data, res):
         cols[i] = col.lower()
     res[scale_name] = data[cols].replace('', 0).mean(axis=1)
     res[scale_name] = res[scale_name].apply(
-        lambda x: '{:.2f}'.format(x) + " (норма: 2.7)" if not np.isnan(x) else '')
+        lambda x: format_answer(x, "норма: 2.7", show_reference))
 
 def calc_nvm(data, res):
     res['NVM - Нидерландский личностный опросник'] = ''
@@ -196,9 +206,9 @@ def calc_nvm(data, res):
         cols[i] = col.lower()
     res['Экстраверсия'] = data[cols].sum(axis=1, skipna=False)
 
-def calc_ders(data, res):
+def calc_ders(data, res, show_reference=True):
 
-    def format_cell(x):
+    def format_cell(x, show_reference=True):
         if x == '':
             return x
         elif np.isnan(x):
@@ -222,7 +232,7 @@ def calc_ders(data, res):
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     res[scale_name] = data[cols].sum(axis=1, skipna=False)
-    res[scale_name] = res[scale_name].apply(format_cell)
+    res[scale_name] = res[scale_name].apply(format_cell if show_reference else format_cell_general)
 
     scale_name = 'Ясность'
     cols = 'DERS_2+DERS_3+DERS_5'
@@ -230,7 +240,7 @@ def calc_ders(data, res):
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     res[scale_name] = data[cols].sum(axis=1, skipna=False)
-    res[scale_name] = res[scale_name].apply(format_cell)
+    res[scale_name] = res[scale_name].apply(format_cell if show_reference else format_cell_general)
 
     scale_name = 'Целенаправленность'
     cols = 'DERS_8+DERS_12+DERS_15'
@@ -238,7 +248,7 @@ def calc_ders(data, res):
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     res[scale_name] = data[cols].sum(axis=1, skipna=False)
-    res[scale_name] = res[scale_name].apply(format_cell)
+    res[scale_name] = res[scale_name].apply(format_cell if show_reference else format_cell_general)
 
     scale_name = 'Управление импульсами'
     cols = 'DERS_9+DERS_16+DERS_18'
@@ -246,7 +256,7 @@ def calc_ders(data, res):
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     res[scale_name] = data[cols].sum(axis=1, skipna=False)
-    res[scale_name] = res[scale_name].apply(format_cell)
+    res[scale_name] = res[scale_name].apply(format_cell if show_reference else format_cell_general)
 
     scale_name = 'Непринятие эмоциональных реакций'
     cols = 'DERS_7+DERS_13+DERS_14'
@@ -254,7 +264,7 @@ def calc_ders(data, res):
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     res[scale_name] = data[cols].sum(axis=1, skipna=False)
-    res[scale_name] = res[scale_name].apply(format_cell)
+    res[scale_name] = res[scale_name].apply(format_cell if show_reference else format_cell_general)
 
     scale_name = 'Стратегии'
     cols = 'DERS_10+DERS_11+DERS_17'
@@ -262,7 +272,7 @@ def calc_ders(data, res):
     for i, col in enumerate(cols):
         cols[i] = col.lower()
     res[scale_name] = data[cols].sum(axis=1, skipna=False)
-    res[scale_name] = res[scale_name].apply(format_cell)
+    res[scale_name] = res[scale_name].apply(format_cell if show_reference else format_cell_general)
 
     cols = ['ders_{}'.format(i) for i in range(1, ders_count + 1)]
     res['DERS_Общий балл'] = data[cols].sum(axis=1, skipna=False).apply(format_cell_general)
