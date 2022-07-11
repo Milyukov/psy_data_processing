@@ -18,7 +18,7 @@ class Debq(Quiz):
         cols = ['DEBQ_1', 'DEBQ_2', 'DEBQ_3', 'DEBQ_4', 'DEBQ_5', 'DEBQ_6', 'DEBQ_7', 'DEBQ_8', 'DEBQ_9', 'DEBQ_10']
         for i, col in enumerate(cols):
             cols[i] = col.lower()
-        self.data_frame[scale_name] = data[cols].mean(axis=1)
+        self.data_frame[scale_name] = data[cols].replace('', 0).mean(axis=1)
         self.data_frame[scale_name] = self.data_frame[scale_name].apply(
             lambda x: '{:.2f}'.format(x) + " (норма: 2.4)" if not np.isnan(x) else '')
 
@@ -26,7 +26,7 @@ class Debq(Quiz):
         cols = ['DEBQ_11', 'DEBQ_12', 'DEBQ_13', 'DEBQ_14', 'DEBQ_15', 'DEBQ_16', 'DEBQ_17', 'DEBQ_18', 'DEBQ_19', 'DEBQ_20', 'DEBQ_21', 'DEBQ_22', 'DEBQ_23']
         for i, col in enumerate(cols):
             cols[i] = col.lower()
-        self.data_frame[scale_name] = data[cols].mean(axis=1)
+        self.data_frame[scale_name] = data[cols].replace('', 0).mean(axis=1)
         self.data_frame[scale_name] = self.data_frame[scale_name].apply(
             lambda x: '{:.2f}'.format(x) + " (норма: 1.8)" if not np.isnan(x) else '')
 
@@ -34,7 +34,7 @@ class Debq(Quiz):
         cols = ['DEBQ_24', 'DEBQ_25', 'DEBQ_26', 'DEBQ_27', 'DEBQ_28', 'DEBQ_29', 'DEBQ_30', 'DEBQ_31', 'DEBQ_32', 'DEBQ_33']
         for i, col in enumerate(cols):
             cols[i] = col.lower()
-        self.data_frame[scale_name] = data[cols].mean(axis=1)
+        self.data_frame[scale_name] = data[cols].replace('', 0).mean(axis=1)
         self.data_frame[scale_name] = self.data_frame[scale_name].apply(
             lambda x: '{:.2f}'.format(x) + " (норма: 2.7)" if not np.isnan(x) else '')
 
@@ -44,4 +44,4 @@ class Debq(Quiz):
 
         initial_row_index += 1
         for row_index in range(initial_row_index, initial_row_index + 3):
-            self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.options)
+            self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.options)

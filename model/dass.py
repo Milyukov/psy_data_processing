@@ -67,5 +67,5 @@ class Dass(Quiz):
         self.worksheet.set_row(initial_row_index, None, self.header_format)
         initial_row_index += 1
         for row_index in range(initial_row_index, initial_row_index + 3):
-            self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.blank)
-            self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, {'format': self.outlier_format})
+            self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.blank)
+            self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, {'format': self.outlier_format})

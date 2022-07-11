@@ -25,7 +25,7 @@ class Model:
             questions[q] = cols
             question_cols.extend(cols)
 
-        additional_info = ['имя', 'фио', 'возраст', 'рост', 'текущий вес']
+        additional_info = ['фио', 'возраст']
         self.original_data = self.original_data[additional_info + question_cols]
 
         # generate new question names
@@ -142,7 +142,7 @@ class Model:
         self.data = pd.concat([edeq_data, dass_data, ies_data, debq_data, nvm_data, ders_data, ed15_data], axis=1)
         self.data['возраст'] = self.original_data['возраст'].fillna(0).astype(int)
 
-        names = self.original_data[['фио', 'имя']].apply(lambda x: x[x.first_valid_index()], axis=1)
+        names = self.original_data['фио']#.apply(lambda x: x[x.first_valid_index()], axis=1)
         self.data.insert(0, 'фио', names)
 
         replace_inverted_answers_dict = {
@@ -159,25 +159,27 @@ class Model:
 
         def format_weight(val):
             val_str = '{}'.format(val)
-            res = re.search('\d*.*,*\d', val_str)
-            res = res.group()
-            res = res.replace(',', '.')
-            return float(res)
+            res = re.findall('\d*\.?,?\d+',val_str)
+            if len(res) > 0:
+                res = res[0].replace(',', '.')
+                return float(res)
+            return 0.0
 
         weight = self.data['edeq_29'].fillna(0).apply(format_weight)
 
         def format_height(val):
             val_str = '{}'.format(val)
-            res = re.search('\d*.*,*\d', val_str)
-            res = res.group()
-            res = res.replace(',', '.')
-            if '.' in res:
-                integer_part, fraction = res.split('.')
-                if float(integer_part) >= 100:
+            res = re.findall('\d*\.?,?\d+',val_str)
+            if len(res) > 0:
+                res = res[0].replace(',', '.')
+                if '.' in res:
+                    integer_part, fraction = res.split('.')
+                    if float(integer_part) >= 100:
+                        return float(res) / 100.0
+                    return float(res)
+                else:
                     return float(res) / 100.0
-                return float(res)
-            else:
-                return float(res) / 100.0
+            return 0.0
 
         height = self.data['edeq_30'].fillna(0).apply(format_height)
         client_data.insert(1, 'ИМТ', weight.div(height.apply(lambda x: x ** 2)))
@@ -188,6 +190,10 @@ class Model:
         self.general_res = self.general_res.replace('nan', '')
 
         def upper_first_letters(s):
+            if not isinstance(s, str):
+                if np.isnan(s):
+                    return ''
+                s = str(s)
             words = s.split()
             new_words = []
             for word in words:
@@ -301,6 +307,9 @@ class Model:
         self.input_filename = input_filename
         self.original_data = utils.prepare_data_frame(self.input_filename, sheet_name=0)
         self.original_data = utils.drop_columns(self.original_data, contains='дата заполнения')
+        self.original_data = utils.drop_columns(self.original_data, contains='этап')
+        self.original_data = utils.drop_columns(self.original_data, contains='название клиента')
+        self.original_data = utils.drop_columns(self.original_data, contains='город проживания')
         columns = self.original_data.columns.values
 
         # Create a Pandas Excel writer using XlsxWriter as the engine.
@@ -314,7 +323,7 @@ class Model:
 
         self.quizes = {}
         # EDEQ
-        self.quizes['edeq'] = Edeq(7, 33, columns, workbook, worksheet)
+        self.quizes['edeq'] = Edeq(2, 33, columns, workbook, worksheet)
 
         # DASS
         self.quizes['dass'] = Dass(self.quizes['edeq'].ec, 21, columns, workbook, worksheet)

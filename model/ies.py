@@ -27,23 +27,23 @@ class Ies(Quiz):
         cols = ['IES_1', 'IES_2', 'IES_3', 'IES_4', 'IES_5', 'IES_6']
         for i, col in enumerate(cols):
             cols[i] = col.lower()
-        self.data_frame['Безусловное разрешение есть'] = data[cols].mean(axis=1)
+        self.data_frame['Безусловное разрешение есть'] = data[cols].replace('', 0).mean(axis=1)
 
         cols = ['IES_7', 'IES_8', 'IES_9', 'IES_10', 'IES_11', 'IES_12', 'IES_13', 'IES_14']
         for i, col in enumerate(cols):
             cols[i] = col.lower()
-        self.data_frame['Прием пищи по физическим, а не эмоциональным причинам'] = data[cols].mean(axis=1)
+        self.data_frame['Прием пищи по физическим, а не эмоциональным причинам'] = data[cols].replace('', 0).mean(axis=1)
 
         cols = ['IES_15', 'IES_16', 'IES_17', 'IES_18', 'IES_19', 'IES_20']
         for i, col in enumerate(cols):
             cols[i] = col.lower()
-        self.data_frame['Доверие внутренним ощущениям голода и сытости'] = data[cols].mean(axis=1)
+        self.data_frame['Доверие внутренним ощущениям голода и сытости'] = data[cols].replace('', 0).mean(axis=1)
 
 
         cols = ['IES_21', 'IES_22', 'IES_23']
         for i, col in enumerate(cols):
             cols[i] = col.lower()
-        self.data_frame['Конгруэнтность "Тело/Выбор еды"'] = data[cols].mean(axis=1)
+        self.data_frame['Конгруэнтность "Тело/Выбор еды"'] = data[cols].replace('', 0).mean(axis=1)
 
         cols = ['ies_{}'.format(i) for i in range(1, self.count + 1)]
         self.data_frame['IES_Общий балл'] = data[cols].mean(axis=1)
@@ -55,29 +55,29 @@ class Ies(Quiz):
         self.options['minimum'] = 2.8
         self.options['maximum'] = 4.2
         row_index += 1
-        self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.blank)
-        self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.options)
+        self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.blank)
+        self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.options)
 
         self.options['minimum'] = 2.33
         self.options['maximum'] = 4.03
         row_index += 1
-        self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.blank)
-        self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.options)
+        self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.blank)
+        self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.options)
 
         self.options['minimum'] = 2.91
         self.options['maximum'] = 4.23
         row_index += 1
-        self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.blank)
-        self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.options)
+        self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.blank)
+        self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.options)
 
         self.options['minimum'] = 2.49
         self.options['maximum'] = 4.09
         row_index += 1
-        self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.blank)
-        self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.options)
+        self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.blank)
+        self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.options)
 
         self.options['minimum'] = 2.9
         self.options['maximum'] = 3.86
         row_index += 1
-        self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.blank)
-        self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.options)
+        self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.blank)
+        self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.options)

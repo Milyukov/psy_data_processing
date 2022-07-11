@@ -95,4 +95,4 @@ class Ders(Quiz):
 
         initial_row_index += 1
         for row_index in range(initial_row_index, initial_row_index + 7):
-            self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.blank)
+            self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.blank)

@@ -50,4 +50,4 @@ class NVM(Quiz):
 
         initial_row_index += 1
         for row_index in range(initial_row_index, initial_row_index + 5):
-            self.worksheet.conditional_format(row_index, 1, row_index, len(self.data_frame.columns) - 1, self.options)
+            self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.options)
