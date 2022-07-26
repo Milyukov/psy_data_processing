@@ -163,8 +163,6 @@ class Model:
         for index, col in enumerate(inverted_columns):
             inverted_columns[index] = col.lower()
 
-
-
         edeq_data = utils.replace_answers(data[['edeq_{}'.format(i) for i in range(1, self.quizes['edeq'].count + 1)]], self.replace_answers_dict_edeq)
         dass_data = utils.replace_answers(data[['dass_{}'.format(i) for i in range(1, self.quizes['dass'].count + 1)]], self.replace_answers_dict_dass)
         ies_data = utils.replace_answers(data[['ies_{}'.format(i) for i in range(1, self.quizes['ies'].count + 1)]], self.replace_answers_dict_ies)
@@ -200,6 +198,10 @@ class Model:
         self.general_res = self.general_res.replace('nan', '')
         self.data['фио'] = self.data['фио'].apply(self.upper_first_letters)
         self.general_res.set_axis(self.data['фио'], inplace=True)
+
+        self.general_res_transposed = self.general_res_transposed.replace(np.nan, '')
+        self.general_res_transposed = self.general_res_transposed.replace('nan', '')
+        self.general_res_transposed.set_axis(self.data['фио'], inplace=True)
 
     def add_infor_for_ed15(self, workbook, worksheet):
         # additional info for ED-15
@@ -317,9 +319,6 @@ class Model:
 
         questions = [self.codes_to_questions[code] for code in codes]
 
-
-
-
         additional_data_frame = self.original_data[questions]
         names = self.original_data['фио'].apply(self.upper_first_letters)
         additional_data_frame.insert(0, 'фио', names)
@@ -421,6 +420,8 @@ class Model:
         for q in self.quizes.values():
             q.eval(self.data)
 
+        self.general_res_transposed = pd.concat([client_data] + [val.data_frame.iloc[:, 1:] for val in self.quizes.values()], axis=1)
+
         cols = ['edeq_13', 'edeq_14', 'edeq_15', 'edeq_16', 'edeq_17', 'edeq_18',
         'edeq_29', 'edeq_30', 'edeq_31', 'edeq_32', 'edeq_33']
         for c in cols:
@@ -435,6 +436,8 @@ class Model:
 
         # Create a Pandas Excel writer using XlsxWriter as the engine.
         self.data.to_excel(self.writer, index=False, sheet_name='replaced')
+        self.general_res_transposed.reset_index(inplace=True)
+        self.general_res_transposed.to_excel(self.writer, index=False, sheet_name='transposed')
         self.general_res = self.general_res.transpose()
         self.general_res.reset_index(inplace=True)
         self.general_res.to_excel(self.writer, index=False, sheet_name='general')
