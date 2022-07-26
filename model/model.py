@@ -14,7 +14,126 @@ import re
 class Model:
 
     def __init__(self) -> None:
-        pass
+        self.replace_answers_dict_edeq = {
+            # EDEQ
+            'ни одного': 0,
+            '1-5 дней':	1,
+            '6-12 дней': 2,
+            '13-15 дней': 3,
+            '16-22 дней': 4,
+            '23-27 дней': 5,
+            'каждый день': 6,
+            'несколько': 1,
+            'менее половины':2,
+            'половина': 3,
+            'более половины': 4,
+            'большинство': 5,
+            'все': 6,
+            'совсем нет': 0,
+            'слегка': 2,
+            'умеренно': 4,
+            'существенно': 6,
+            np.nan: '',
+            'nan': '',
+            'NaN': '',
+            'мой ответ': 0
+        }
+        
+        self.replace_answers_dict_dass = {
+            # DASS
+            'вообще не относится ко мне': 0,
+            'относилось ко мне до некоторой степени или некоторое время': 1,
+            'относилось ко мне в значительной мере или значительную часть времени': 2,
+            'относилось ко мне полностью или большую часть времени': 3,
+            np.nan: '',
+            'nan': '',
+            'NaN': ''
+        }
+        self.replace_answers_dict_ies = {
+            # IES
+            'полностью не согласен': 1,
+            'не согласен': 2,
+            'ни то, ни другое': 3,
+            'согласен': 4,
+            'полностью согласен': 5
+        }
+        self.replace_answers_dict_debq = {
+            # DEBQ
+            'никогда': 1,
+            'очень редко': 2,
+            'иногда': 3,
+            'часто': 4,
+            'очень часто': 5
+        }
+        self.replace_answers_dict_nvm = {
+            # NVM
+            'неверно': 0,
+            'затрудняюсь ответить': 1,
+            'верно': 2,
+            np.nan: '',
+            'nan': '',
+            'NaN': ''
+        }
+
+        self.replace_answers_dict_ders = {
+            # DERS
+            'почти никогда (0-10%)': 1,
+            'иногда (11-35%)': 2,
+            'примерно половину времени (36-65%)': 3,
+            'большую часть времени (66-90%)': 4,
+            'почти всегда (91-100%)': 5,
+            np.nan: '',
+            'nan': '',
+            'NaN': ''
+        }
+
+        self.replace_answers_dict_ed15 = {
+            'никогда': 0,
+            'редко': 1,
+            'изредка': 2,
+            'иногда': 3,
+            'часто': 4,
+            'очень часто': 5,
+            'всегда': 6
+        }
+
+        self.replace_answers_dict_ed15_back = {val: key for (key, val) in self.replace_answers_dict_ed15.items()}
+
+    @staticmethod
+    def upper_first_letters(s):
+        if not isinstance(s, str):
+            if np.isnan(s):
+                return ''
+            s = str(s)
+        words = s.split()
+        new_words = []
+        for word in words:
+            new_words.append(word[0].upper() + word[1:])
+        return ' '.join(new_words)
+
+    @staticmethod
+    def format_weight(val):
+        val_str = '{}'.format(val)
+        res = re.findall('\d*\.?,?\d+',val_str)
+        if len(res) > 0:
+            res = res[0].replace(',', '.')
+            return float(res)
+        return 0.0
+
+    @staticmethod
+    def format_height(val):
+        val_str = '{}'.format(val)
+        res = re.findall('\d*\.?,?\d+',val_str)
+        if len(res) > 0:
+            res = res[0].replace(',', '.')
+            if '.' in res:
+                integer_part, fraction = res.split('.')
+                if float(integer_part) >= 100:
+                    return float(res) / 100.0
+                return float(res)
+            else:
+                return float(res) / 100.0
+        return 0.0
 
     def process_data_frame(self):
         # get questions names
@@ -40,104 +159,19 @@ class Model:
         data = utils.replace_questions(self.original_data, self.questions_to_codes)
 
         # generate new answers names
-        replace_answers_dict_edeq = {
-            # EDEQ
-            'ни одного': 0,
-            '1-5 дней':	1,
-            '6-12 дней': 2,
-            '13-15 дней': 3,
-            '16-22 дней': 4,
-            '23-27 дней': 5,
-            'каждый день': 6,
-            'несколько': 1,
-            'менее половины':2,
-            'половина': 3,
-            'более половины': 4,
-            'большинство': 5,
-            'все': 6,
-            'совсем нет': 0,
-            'слегка': 2,
-            'умеренно': 4,
-            'существенно': 6,
-            np.nan: '',
-            'nan': '',
-            'NaN': '',
-            'мой ответ': 0
-        }
-        
-        replace_answers_dict_dass = {
-            # DASS
-            'вообще не относится ко мне': 0,
-            'относилось ко мне до некоторой степени или некоторое время': 1,
-            'относилось ко мне в значительной мере или значительную часть времени': 2,
-            'относилось ко мне полностью или большую часть времени': 3,
-            np.nan: '',
-            'nan': '',
-            'NaN': ''
-        }
-        replace_answers_dict_ies = {
-            # IES
-            'полностью не согласен': 1,
-            'не согласен': 2,
-            'ни то, ни другое': 3,
-            'согласен': 4,
-            'полностью согласен': 5
-        }
-        replace_answers_dict_debq = {
-            # DEBQ
-            'никогда': 1,
-            'очень редко': 2,
-            'иногда': 3,
-            'часто': 4,
-            'очень часто': 5
-        }
-        replace_answers_dict_nvm = {
-            # NVM
-            'неверно': 0,
-            'затрудняюсь ответить': 1,
-            'верно': 2,
-            np.nan: '',
-            'nan': '',
-            'NaN': ''
-        }
-
-        replace_answers_dict_ders = {
-            # DERS
-            'почти никогда (0-10%)': 1,
-            'иногда (11-35%)': 2,
-            'примерно половину времени (36-65%)': 3,
-            'большую часть времени (66-90%)': 4,
-            'почти всегда (91-100%)': 5,
-            np.nan: '',
-            'nan': '',
-            'NaN': ''
-        }
-
-        replace_answers_dict_ed15 = {
-            'никогда': 0,
-            'редко': 1,
-            'изредка': 2,
-            'иногда': 3,
-            'часто': 4,
-            'очень часто': 5,
-            'всегда': 6
-        }
-
-        replace_answers_dict_ed15_back = {val: key for (key, val) in replace_answers_dict_ed15.items()}
-
         inverted_columns = ['IES_1', 'IES_2', 'IES_3', 'IES_7', 'IES_8', 'IES_9', 'IES_10', 'DEBQ_31', 'DERS_1', 'DERS_4', 'DERS_6']
         for index, col in enumerate(inverted_columns):
             inverted_columns[index] = col.lower()
 
 
 
-        edeq_data = utils.replace_answers(data[['edeq_{}'.format(i) for i in range(1, self.quizes['edeq'].count + 1)]], replace_answers_dict_edeq)
-        dass_data = utils.replace_answers(data[['dass_{}'.format(i) for i in range(1, self.quizes['dass'].count + 1)]], replace_answers_dict_dass)
-        ies_data = utils.replace_answers(data[['ies_{}'.format(i) for i in range(1, self.quizes['ies'].count + 1)]], replace_answers_dict_ies)
-        debq_data = utils.replace_answers(data[['debq_{}'.format(i) for i in range(1, self.quizes['debq'].count + 1)]], replace_answers_dict_debq)
-        nvm_data = utils.replace_answers(data[['nvm_{}'.format(i) for i in range(1, self.quizes['nvm'].count + 1)]], replace_answers_dict_nvm)
-        ders_data = utils.replace_answers(data[['ders_{}'.format(i) for i in range(1, self.quizes['ders'].count + 1)]], replace_answers_dict_ders)
-        ed15_data = utils.replace_answers(data[['ed15_{}'.format(i) for i in range(1, self.quizes['ed15'].count + 1)]], replace_answers_dict_ed15)
+        edeq_data = utils.replace_answers(data[['edeq_{}'.format(i) for i in range(1, self.quizes['edeq'].count + 1)]], self.replace_answers_dict_edeq)
+        dass_data = utils.replace_answers(data[['dass_{}'.format(i) for i in range(1, self.quizes['dass'].count + 1)]], self.replace_answers_dict_dass)
+        ies_data = utils.replace_answers(data[['ies_{}'.format(i) for i in range(1, self.quizes['ies'].count + 1)]], self.replace_answers_dict_ies)
+        debq_data = utils.replace_answers(data[['debq_{}'.format(i) for i in range(1, self.quizes['debq'].count + 1)]], self.replace_answers_dict_debq)
+        nvm_data = utils.replace_answers(data[['nvm_{}'.format(i) for i in range(1, self.quizes['nvm'].count + 1)]], self.replace_answers_dict_nvm)
+        ders_data = utils.replace_answers(data[['ders_{}'.format(i) for i in range(1, self.quizes['ders'].count + 1)]], self.replace_answers_dict_ders)
+        ed15_data = utils.replace_answers(data[['ed15_{}'.format(i) for i in range(1, self.quizes['ed15'].count + 1)]], self.replace_answers_dict_ed15)
 
         self.data = pd.concat([edeq_data, dass_data, ies_data, debq_data, nvm_data, ders_data, ed15_data], axis=1)
         self.data['возраст'] = self.original_data['возраст'].fillna(0).astype(int)
@@ -156,51 +190,15 @@ class Model:
 
         client_data = pd.DataFrame()
         client_data.insert(0, 'Возраст', self.data['возраст'])
-
-        def format_weight(val):
-            val_str = '{}'.format(val)
-            res = re.findall('\d*\.?,?\d+',val_str)
-            if len(res) > 0:
-                res = res[0].replace(',', '.')
-                return float(res)
-            return 0.0
-
-        weight = self.data['edeq_29'].fillna(0).apply(format_weight)
-
-        def format_height(val):
-            val_str = '{}'.format(val)
-            res = re.findall('\d*\.?,?\d+',val_str)
-            if len(res) > 0:
-                res = res[0].replace(',', '.')
-                if '.' in res:
-                    integer_part, fraction = res.split('.')
-                    if float(integer_part) >= 100:
-                        return float(res) / 100.0
-                    return float(res)
-                else:
-                    return float(res) / 100.0
-            return 0.0
-
-        height = self.data['edeq_30'].fillna(0).apply(format_height)
+        weight = self.data['edeq_29'].fillna(0).apply(self.format_weight)
+        height = self.data['edeq_30'].fillna(0).apply(self.format_height)
         client_data.insert(1, 'ИМТ', weight.div(height.apply(lambda x: x ** 2)))
         return client_data
 
     def post_process_data(self):
         self.general_res = self.general_res.replace(np.nan, '')
         self.general_res = self.general_res.replace('nan', '')
-
-        def upper_first_letters(s):
-            if not isinstance(s, str):
-                if np.isnan(s):
-                    return ''
-                s = str(s)
-            words = s.split()
-            new_words = []
-            for word in words:
-                new_words.append(word[0].upper() + word[1:])
-            return ' '.join(new_words)
-
-        self.data['фио'] = self.data['фио'].apply(upper_first_letters)
+        self.data['фио'] = self.data['фио'].apply(self.upper_first_letters)
         self.general_res.set_axis(self.data['фио'], inplace=True)
 
     def add_infor_for_ed15(self, workbook, worksheet):
@@ -302,6 +300,79 @@ class Model:
         worksheet.write('P74', '2,91', cell_format)
         worksheet.write('Q74', '4,69', cell_format)
 
+    def add_additional_sheet(self, workbook, worksheet):
+        # additional sheet
+        summary_cols = ['Ограничение питания', 'Избегание питания', 'Избегание пищи', 'Правила питания', 'Пустой желудок', 
+        'Озабоченность пищей, питанием или калориями', 'Страх потери контроля над питанием', 'Питание втайне от других', 
+        'Питание в социальном контексте', 'Чувство вины в связи с питанием', 'Плоский живот', 'Озабоченность формой тела или весом', 
+        'Значение формы тела', 'Страх набора веса', 'Неудовлетворённость формой тела', 'Дискомфорт при виде своего тела', 
+        'Избегание демонстрации тела', 'Ощущение полноты', 'Важность веса', 'Реакция на просьбу взвешиваться', 'Озабоченность формой тела или весом',
+        'Неудовлетворённость весом', 'Желание сбросить вес']
+
+        capital_codes = ['EDEQ_1', 'EDEQ_2', 'EDEQ_3', 
+        'EDEQ_4', 'EDEQ_5', 'EDEQ_7', 'EDEQ_9', 'EDEQ_19', 'EDEQ_21', 'EDEQ_20', 'EDEQ_6', 'EDEQ_8', 'EDEQ_23', 'EDEQ_10', 
+        'EDEQ_26', 'EDEQ_27', 'EDEQ_28', 'EDEQ_11', 'EDEQ_22', 'EDEQ_24', 'EDEQ_8', 'EDEQ_25', 'EDEQ_12']
+
+        codes = [code.lower() for code in capital_codes]
+
+        questions = [self.codes_to_questions[code] for code in codes]
+
+
+
+
+        additional_data_frame = self.original_data[questions]
+        names = self.original_data['фио'].apply(self.upper_first_letters)
+        additional_data_frame.insert(0, 'фио', names)
+        additional_data_frame = utils.replace_questions(additional_data_frame, self.questions_to_codes)
+        additional_data_frame = utils.replace_answers(additional_data_frame, self.replace_answers_dict_edeq)
+
+        additional_data = additional_data_frame.values
+
+        data = np.array([
+            ['ФИО'] + summary_cols
+        ])
+        additional_data = np.concatenate([data, additional_data], axis=0)
+
+        additional_data_frame = pd.DataFrame(data=additional_data)
+        additional_data_frame.to_excel(self.writer, index=False, sheet_name='additional')
+
+        worksheet = self.writer.sheets['additional']
+        # Create a format to use in the merged range.
+        merge_format = workbook.add_format({
+            'bold': 1,
+            'border': 1,
+            'align': 'center',
+            'valign': 'vcenter',
+            'fg_color': '#d9d2e9'})
+        merge_format.set_font_size(10)
+        merge_format.set_font_name('Arial')
+
+
+        # Format cells.
+        worksheet.merge_range('B1:F1', 'Ограничения', merge_format)
+        worksheet.merge_range('G1:K1', 'Беспокойство о питании', merge_format)
+        worksheet.merge_range('L1:S1', 'Беспокойство о форме тела', merge_format)
+        worksheet.merge_range('T1:X1', 'Беспокойство о весе', merge_format)
+
+        cell_format = workbook.add_format({'fg_color': '#ead1dc', 'text_wrap': True})
+        cell_format.set_font_size(10)
+        cell_format.set_font_name('Arial')
+        worksheet.write('F2', 'Пустой желудок', cell_format)
+        worksheet.write('K2', 'Чувство вины в связи с питанием', cell_format)
+        worksheet.write('S2', 'Ощущение полноты', cell_format)
+        worksheet.write('X2', 'Желание сбросить вес', cell_format)
+
+        row_format = workbook.add_format({'text_wrap': True})
+        row_format.set_font_size(10)
+        row_format.set_font_name('Arial')
+        worksheet.set_row(1, 80, row_format)
+
+        col_format = workbook.add_format()
+        col_format.set_font_size(10)
+        col_format.set_font_name('Arial')
+        worksheet.set_column(0, 0, 30, col_format)
+        worksheet.set_column(1, len(summary_cols), 10, col_format)
+
     def process(self, input_filename, output_filename, mode) -> None:
         # generate data frame for quiz evaluation
         self.input_filename = input_filename
@@ -389,6 +460,8 @@ class Model:
             q.format()
 
         self.add_infor_for_ed15(workbook, worksheet)
+
+        self.add_additional_sheet(workbook, worksheet)
 
         # Close the Pandas Excel writer and output the Excel file.
         self.writer.save()
