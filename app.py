@@ -644,6 +644,8 @@ def run(filename, show_reference_option=1):
     general_res.insert(0, 'Возраст', data['возраст'])
 
     def format_weight(val):
+        if val == '':
+            return 0.0
         val_str = '{}'.format(val)
         res = re.findall('\d*\.?,?\d+',val_str)
         if len(res) > 0:
@@ -654,6 +656,8 @@ def run(filename, show_reference_option=1):
     weight = data['edeq_29'].replace('', 0).fillna(0).apply(format_weight)
 
     def format_height(val):
+        if val == '':
+            return 0.0
         val_str = '{}'.format(val)
         res = re.findall('\d*\.?,?\d+',val_str)
         if len(res) > 0:
