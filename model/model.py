@@ -373,6 +373,7 @@ class Model:
         worksheet.set_column(1, len(summary_cols), 10, col_format)
 
     def process(self, input_filename, output_filename, mode) -> None:
+        show_reference = mode == 0
         # generate data frame for quiz evaluation
         self.input_filename = input_filename
         self.original_data = utils.prepare_data_frame(self.input_filename, sheet_name=0)
@@ -396,19 +397,19 @@ class Model:
         self.quizes['edeq'] = Edeq(2, 33, columns, workbook, worksheet)
 
         # DASS
-        self.quizes['dass'] = Dass(self.quizes['edeq'].ec, 21, columns, workbook, worksheet)
+        self.quizes['dass'] = Dass(self.quizes['edeq'].ec, 21, columns, workbook, worksheet, show_reference)
 
         # IES
         self.quizes['ies'] = Ies(self.quizes['dass'].ec, 23, columns, workbook, worksheet)
 
         # DEBQ
-        self.quizes['debq'] = Debq(self.quizes['ies'].ec, 33, columns, workbook, worksheet)
+        self.quizes['debq'] = Debq(self.quizes['ies'].ec, 33, columns, workbook, worksheet, show_reference)
 
         # NVM
         self.quizes['nvm'] = NVM(self.quizes['debq'].ec, 83, columns, workbook, worksheet)
 
         # DERS
-        self.quizes['ders'] = Ders(self.quizes['nvm'].ec, 18, columns, workbook, worksheet)
+        self.quizes['ders'] = Ders(self.quizes['nvm'].ec, 18, columns, workbook, worksheet, show_reference)
 
         # ED-15
         self.quizes['ed15'] = Ed(self.quizes['ders'].ec, 15, columns, workbook, worksheet)

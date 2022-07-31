@@ -4,7 +4,7 @@ import numpy as np
 
 class Ders(Quiz):
 
-    def __init__(self, start_col, count, columns, workbook, worksheet) -> None:
+    def __init__(self, start_col, count, columns, workbook, worksheet, show_reference) -> None:
         super().__init__(start_col, count, columns, worksheet)
         self.header_format = workbook.add_format({'bg_color': 'yellow'})
         outlier_format = workbook.add_format({'align': 'left'})
@@ -17,6 +17,7 @@ class Ders(Quiz):
             'stop_if_true': True, 
             'format': blank_format,
             }
+        self.show_reference = show_reference
 
     def eval(self, data):
 
@@ -26,8 +27,10 @@ class Ders(Quiz):
                 return x
             elif np.isnan(x):
                 return ''
+            elif self.show_reference:
+                return f'{x:.0f} из 15'
             else:
-                return '{:.0f}'.format(x) + " из 15"
+                return f'{x:.0f}'
 
         def format_cell_general(x):
             if x == '':
@@ -35,7 +38,7 @@ class Ders(Quiz):
             elif np.isnan(x):
                 return ''
             else:
-                return '{:.0f}'.format(x)
+                return f'{x:.0f}'
 
         self.data_frame = pd.DataFrame([''] * len(data), columns=['Шкала трудностей эмоциональной регуляции (DERS-18)'])
         scale_name = 'Осозанность'
