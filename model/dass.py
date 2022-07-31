@@ -4,7 +4,7 @@ import numpy as np
 
 class Dass(Quiz):
 
-    def __init__(self, start_col, count, columns, workbook, worksheet) -> None:
+    def __init__(self, start_col, count, columns, workbook, worksheet, show_reference) -> None:
         super().__init__(start_col, count, columns, worksheet)
         self.header_format = workbook.add_format({'bg_color': 'yellow'})
         self.outlier_format = workbook.add_format({'align': 'left'})
@@ -14,13 +14,16 @@ class Dass(Quiz):
             'stop_if_true': True, 
             'format': blank_format
             }
+        self.show_reference = show_reference
 
     def eval(self, data):
         self.data_frame = pd.DataFrame([''] * len(data), columns=['Шкала депрессии, тревоги и стресса (DASS-21)'])
         def format_answer(x, suffix):
             if np.isnan(x):
                 return ''
-            return "{:.0f} ({})".format(x, suffix)
+            if self.show_reference:
+                return f'{x:.0f} ({suffix})'
+            return f'{x:.0f}'
             
         cols = ['DASS_3', 'DASS_5', 'DASS_10', 'DASS_13', 'DASS_16', 'DASS_17', 'DASS_21']
         for i, col in enumerate(cols):
