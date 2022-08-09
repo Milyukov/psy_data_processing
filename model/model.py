@@ -1,3 +1,4 @@
+from copy import deepcopy
 import pandas as pd
 import numpy as np
 from model.edeq import Edeq
@@ -144,7 +145,7 @@ class Model:
             questions[q] = cols
             question_cols.extend(cols)
 
-        additional_info = ['фио', 'возраст']
+        additional_info = ['фио', 'название клиента', 'возраст']
         self.original_data = self.original_data[additional_info + question_cols]
 
         # generate new question names
@@ -174,7 +175,7 @@ class Model:
         self.data = pd.concat([edeq_data, dass_data, ies_data, debq_data, nvm_data, ders_data, ed15_data], axis=1)
         self.data['возраст'] = self.original_data['возраст'].fillna(0).astype(int)
 
-        names = self.original_data['фио']#.apply(lambda x: x[x.first_valid_index()], axis=1)
+        names = self.original_data[['фио', 'название клиента']].apply(lambda x: x[x.first_valid_index()], axis=1)
         self.data.insert(0, 'фио', names)
 
         replace_inverted_answers_dict = {
@@ -190,7 +191,7 @@ class Model:
         client_data.insert(0, 'Возраст', self.data['возраст'])
         weight = self.data['edeq_29'].fillna(0).apply(self.format_weight)
         height = self.data['edeq_30'].fillna(0).apply(self.format_height)
-        client_data.insert(1, 'ИМТ', weight.div(height.apply(lambda x: x ** 2)))
+        client_data.insert(1, 'ИМТ', weight.div(height.apply(lambda x: x ** 2)).apply(lambda x: f'{x:.2f}'))
         return client_data
 
     def post_process_data(self):
@@ -202,6 +203,8 @@ class Model:
         self.general_res_transposed = self.general_res_transposed.replace(np.nan, '')
         self.general_res_transposed = self.general_res_transposed.replace('nan', '')
         self.general_res_transposed.set_axis(self.data['фио'], inplace=True)
+        # edeq_cols = self.general_res_transposed.iloc[:, 4:8].columns.values
+        # self.general_res_transposed[edeq_cols] = self.general_res_transposed[edeq_cols].apply(lambda x: f'{x:.2f}')
 
     def add_infor_for_ed15(self, workbook, worksheet):
         # additional info for ED-15
@@ -379,7 +382,6 @@ class Model:
         self.original_data = utils.prepare_data_frame(self.input_filename, sheet_name=0)
         self.original_data = utils.drop_columns(self.original_data, contains='дата заполнения')
         self.original_data = utils.drop_columns(self.original_data, contains='этап')
-        self.original_data = utils.drop_columns(self.original_data, contains='название клиента')
         self.original_data = utils.drop_columns(self.original_data, contains='город проживания')
         columns = self.original_data.columns.values
 
@@ -394,7 +396,7 @@ class Model:
 
         self.quizes = {}
         # EDEQ
-        self.quizes['edeq'] = Edeq(2, 33, columns, workbook, worksheet)
+        self.quizes['edeq'] = Edeq(3, 33, columns, workbook, worksheet)
 
         # DASS
         self.quizes['dass'] = Dass(self.quizes['edeq'].ec, 21, columns, workbook, worksheet, show_reference)
@@ -421,8 +423,6 @@ class Model:
         for q in self.quizes.values():
             q.eval(self.data)
 
-        self.general_res_transposed = pd.concat([client_data] + [val.data_frame.iloc[:, 1:] for val in self.quizes.values()], axis=1)
-
         cols = ['edeq_13', 'edeq_14', 'edeq_15', 'edeq_16', 'edeq_17', 'edeq_18',
         'edeq_29', 'edeq_30', 'edeq_31', 'edeq_32', 'edeq_33']
         for c in cols:
@@ -432,6 +432,7 @@ class Model:
             self.quizes['edeq'].data_frame[self.codes_to_questions[c]] = self.data[c].apply(str)
 
         self.general_res = pd.concat([client_data] + [val.data_frame for val in self.quizes.values()], axis=1)
+        self.general_res_transposed = deepcopy(self.general_res)
 
         self.post_process_data()
 
