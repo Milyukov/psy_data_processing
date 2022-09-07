@@ -4,8 +4,8 @@ import numpy as np
 
 class Dass(Quiz):
 
-    def __init__(self, start_col, count, columns, workbook, worksheet, show_reference) -> None:
-        super().__init__(start_col, count, columns, worksheet)
+    def __init__(self, start_col, count, columns, workbook, worksheet, show_reference, transposed_worksheet=None) -> None:
+        super().__init__(start_col, count, columns, worksheet, transposed_worksheet)
         self.header_format = workbook.add_format({'bg_color': 'yellow'})
         self.outlier_format = workbook.add_format({'align': 'left'})
         blank_format = workbook.add_format({'align': 'left', 'num_format': '0'})
@@ -72,3 +72,9 @@ class Dass(Quiz):
         for row_index in range(initial_row_index, initial_row_index + 3):
             self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.blank)
             self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, {'format': self.outlier_format})
+
+        if self.transposed_worksheet is not None:
+            initial_col_index = 20 - 1
+            for col_index in range(initial_col_index, initial_col_index + 3):
+                self.transposed_worksheet.conditional_format(1, col_index, self.data_frame.shape[0] - 1, col_index, self.blank)
+                self.transposed_worksheet.conditional_format(1, col_index, self.data_frame.shape[0] - 1, col_index, {'format': self.outlier_format})

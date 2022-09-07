@@ -4,8 +4,8 @@ import numpy as np
 
 class Ed(Quiz):
 
-    def __init__(self, start_col, count, columns, workbook, worksheet) -> None:
-        super().__init__(start_col, count, columns, worksheet)
+    def __init__(self, start_col, count, columns, workbook, worksheet, transposed_worksheet=None) -> None:
+        super().__init__(start_col, count, columns, worksheet, transposed_worksheet)
         self.header_format = workbook.add_format({'bg_color': 'yellow'})
         outlier_format = workbook.add_format({'bg_color': '#FAA9A5', 'align': 'left'})
         self.options = {
@@ -86,3 +86,8 @@ class Ed(Quiz):
         initial_row_index += 1
         for row_index in range(initial_row_index, initial_row_index + 3):
             self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.options)
+
+        if self.transposed_worksheet is not None:
+            initial_col_index = 48 - 6
+            for col_index in range(initial_col_index, initial_col_index + 3):
+                self.transposed_worksheet.conditional_format(1, col_index, self.data_frame.shape[0] - 1, col_index, self.options)
