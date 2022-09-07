@@ -100,6 +100,9 @@ class Model:
 
         self.replace_answers_dict_ed15_back = {val: key for (key, val) in self.replace_answers_dict_ed15.items()}
 
+        self.age_col = 'Возраст (ДАННЫЕ ПАЦИЕНТА)'.lower()
+        self.name_col = 'ФИО (EDE-Q (ПИЩЕВОЕ ПОВЕДЕНИЕ))'.lower()
+
     @staticmethod
     def upper_first_letters(s):
         if not isinstance(s, str):
@@ -145,7 +148,7 @@ class Model:
             questions[q] = cols
             question_cols.extend(cols)
 
-        additional_info = ['фио', 'название клиента', 'возраст']
+        additional_info = [self.name_col, 'название клиента', self.age_col]
         self.original_data = self.original_data[additional_info + question_cols]
 
         # generate new question names
@@ -173,9 +176,9 @@ class Model:
         ed15_data = utils.replace_answers(data[['ed15_{}'.format(i) for i in range(1, self.quizes['ed15'].count + 1)]], self.replace_answers_dict_ed15)
 
         self.data = pd.concat([edeq_data, dass_data, ies_data, debq_data, nvm_data, ders_data, ed15_data], axis=1)
-        self.data['возраст'] = self.original_data['возраст'].fillna(0).astype(int)
+        self.data['возраст'] = self.original_data[self.age_col].fillna(0).astype(int)
 
-        names = self.original_data[['фио', 'название клиента']].apply(lambda x: x[x.first_valid_index()], axis=1)
+        names = self.original_data[[self.name_col, 'название клиента']].apply(lambda x: x[x.first_valid_index()], axis=1)
         self.data.insert(0, 'фио', names)
 
         replace_inverted_answers_dict = {
@@ -323,7 +326,7 @@ class Model:
         questions = [self.codes_to_questions[code] for code in codes]
 
         additional_data_frame = self.original_data[questions]
-        names = self.original_data['фио'].apply(self.upper_first_letters)
+        names = self.original_data[self.name_col].apply(self.upper_first_letters)
         additional_data_frame.insert(0, 'фио', names)
         additional_data_frame = utils.replace_questions(additional_data_frame, self.questions_to_codes)
         additional_data_frame = utils.replace_answers(additional_data_frame, self.replace_answers_dict_edeq)
