@@ -4,8 +4,8 @@ import numpy as np
 
 class Ders(Quiz):
 
-    def __init__(self, start_col, count, columns, workbook, worksheet, show_reference) -> None:
-        super().__init__(start_col, count, columns, worksheet)
+    def __init__(self, start_col, count, columns, workbook, worksheet, transposed_worksheet=None, show_reference=True) -> None:
+        super().__init__(start_col, count, columns, worksheet, transposed_worksheet)
         self.header_format = workbook.add_format({'bg_color': 'yellow'})
         outlier_format = workbook.add_format({'align': 'left'})
         self.options = {
@@ -99,3 +99,8 @@ class Ders(Quiz):
         initial_row_index += 1
         for row_index in range(initial_row_index, initial_row_index + 7):
             self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.blank)
+
+        if self.transposed_worksheet is not None:
+            initial_row_index = 40 - 5
+            for row_index in range(initial_row_index, initial_row_index + 7):
+                self.transposed_worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.blank)

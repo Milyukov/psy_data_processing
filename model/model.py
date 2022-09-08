@@ -396,28 +396,31 @@ class Model:
         empty_frame = pd.DataFrame()
         empty_frame.to_excel(self.writer, index=False, sheet_name='general')
         worksheet = self.writer.sheets['general']
+        empty_frame = pd.DataFrame()
+        empty_frame.to_excel(self.writer, index=False, sheet_name='transposed')
+        worksheet_transposed = self.writer.sheets['transposed']
 
         self.quizes = {}
         # EDEQ
-        self.quizes['edeq'] = Edeq(3, 33, columns, workbook, worksheet)
+        self.quizes['edeq'] = Edeq(3, 33, columns, workbook, worksheet, worksheet_transposed)
 
         # DASS
         self.quizes['dass'] = Dass(self.quizes['edeq'].ec, 21, columns, workbook, worksheet, show_reference)
 
         # IES
-        self.quizes['ies'] = Ies(self.quizes['dass'].ec, 23, columns, workbook, worksheet)
+        self.quizes['ies'] = Ies(self.quizes['dass'].ec, 23, columns, workbook, worksheet, worksheet_transposed)
 
         # DEBQ
-        self.quizes['debq'] = Debq(self.quizes['ies'].ec, 33, columns, workbook, worksheet, show_reference)
+        self.quizes['debq'] = Debq(self.quizes['ies'].ec, 33, columns, workbook, worksheet, worksheet_transposed, show_reference)
 
         # NVM
-        self.quizes['nvm'] = NVM(self.quizes['debq'].ec, 83, columns, workbook, worksheet)
+        self.quizes['nvm'] = NVM(self.quizes['debq'].ec, 83, columns, workbook, worksheet, worksheet_transposed)
 
         # DERS
-        self.quizes['ders'] = Ders(self.quizes['nvm'].ec, 18, columns, workbook, worksheet, show_reference)
+        self.quizes['ders'] = Ders(self.quizes['nvm'].ec, 18, columns, workbook, worksheet, worksheet_transposed, show_reference)
 
         # ED-15
-        self.quizes['ed15'] = Ed(self.quizes['ders'].ec, 15, columns, workbook, worksheet)
+        self.quizes['ed15'] = Ed(self.quizes['ders'].ec, 15, columns, workbook, worksheet, worksheet_transposed)
 
         # preprocess *.xlsx-file
         client_data = self.process_data_frame()
@@ -435,7 +438,7 @@ class Model:
             self.quizes['edeq'].data_frame[self.codes_to_questions[c]] = self.data[c].apply(str)
 
         self.general_res = pd.concat([client_data] + [val.data_frame for val in self.quizes.values()], axis=1)
-        self.general_res_transposed = deepcopy(self.general_res)
+        self.general_res_transposed = pd.concat([client_data] + [val.data_frame.loc[:, val.data_frame.columns[1:]] for val in self.quizes.values()], axis=1)
 
         self.post_process_data()
 
@@ -452,12 +455,15 @@ class Model:
         format_index.set_bold(True)
         format_index.set_align('left')
         assert worksheet.set_column(0, 0, 50, format_index) == 0
+        assert worksheet_transposed.set_row(0, 50, format_index) == 0
 
         # format EDEQ, IES and DEBQ
         format_values = workbook.add_format({'num_format': '0.00'})
         format_values.set_bold(False)
         format_values.set_align('left')
         assert worksheet.set_column(1, len(self.general_res.columns), 30, format_values) == 0
+        for row_index in range(1, len(self.general_res.columns)):
+            assert worksheet_transposed.set_row(row_index, 30, format_values) == 0
 
         # format DASS, NVM and DERS
         format_values = workbook.add_format({'num_format': '0', 'align': 'left'})
