@@ -18,31 +18,31 @@ class NVM(Quiz):
         cols = cols.split('+')
         for i, col in enumerate(cols):
             cols[i] = col.lower()
-        self.data_frame['Негативизм'] = data[cols].sum(axis=1, skipna=False)
+        self.data_frame['Негативизм'] = data[cols].replace('', 0).sum(axis=1, skipna=False)
 
         cols = 'NVM_1+NVM_2+NVM_3+NVM_5+NVM_7+NVM_11+NVM_12+NVM_13+NVM_14+NVM_15+NVM_17+NVM_19+NVM_25+NVM_27+NVM_30+NVM_35+NVM_37+NVM_41+NVM_52+NVM_54'
         cols = cols.split('+')
         for i, col in enumerate(cols):
             cols[i] = col.lower()
-        self.data_frame['Соматизация'] = data[cols].sum(axis=1, skipna=False)
+        self.data_frame['Соматизация'] = data[cols].replace('', 0).sum(axis=1, skipna=False)
 
         cols = 'NVM_20+NVM_36+NVM_39+NVM_42+NVM_45+NVM_55+NVM_60+NVM_63+NVM_64+NVM_65+NVM_68+NVM_71+NVM_73+NVM_79+NVM_81'
         cols = cols.split('+')
         for i, col in enumerate(cols):
             cols[i] = col.lower()
-        self.data_frame['Застенчивость'] = data[cols].sum(axis=1, skipna=False)
+        self.data_frame['Застенчивость'] = data[cols].replace('', 0).sum(axis=1, skipna=False)
 
         cols = 'NVM_8+NVM_18+NVM_26+NVM_28+NVM_29+NVM_34+NVM_44+NVM_57+NVM_61+NVM_66+NVM_67+NVM_74+NVM_75'
         cols = cols.split('+')
         for i, col in enumerate(cols):
             cols[i] = col.lower()
-        self.data_frame['Психопатология'] = data[cols].sum(axis=1, skipna=False)
+        self.data_frame['Психопатология'] = data[cols].replace('', 0).sum(axis=1, skipna=False)
 
         cols = 'NVM_23+NVM_40+NVM_46+NVM_47+NVM_50+NVM_53+NVM_56+NVM_62+NVM_72+NVM_76+NVM_77+NVM_78+NVM_83'
         cols = cols.split('+')
         for i, col in enumerate(cols):
             cols[i] = col.lower()
-        self.data_frame['Экстраверсия'] = data[cols].sum(axis=1, skipna=False)
+        self.data_frame['Экстраверсия'] = data[cols].replace('', 0).sum(axis=1, skipna=False)
 
     def format(self):
         initial_row_index = 34
