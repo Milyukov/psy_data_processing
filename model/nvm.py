@@ -3,14 +3,8 @@ import pandas as pd
 
 class NVM(Quiz):
 
-    def __init__(self, start_col, count, columns, workbook, worksheet, transposed_worksheet=None) -> None:
-        super().__init__(start_col, count, columns, worksheet, transposed_worksheet)
-        self.header_format = workbook.add_format({'bg_color': 'yellow'})
-        outlier_format = workbook.add_format({'align': 'left'})
-
-        self.options = {
-            'format': outlier_format
-            }
+    def __init__(self, start_col, count, columns) -> None:
+        super().__init__(start_col, count, columns)
 
     def eval(self, data):
         self.data_frame = pd.DataFrame([''] * len(data), columns=['NVM - Нидерландский личностный опросник'])
@@ -44,15 +38,6 @@ class NVM(Quiz):
             cols[i] = col.lower()
         self.data_frame['Экстраверсия'] = data[cols].replace('', 0).sum(axis=1, skipna=False)
 
-    def format(self):
-        initial_row_index = 34
-        self.worksheet.set_row(initial_row_index, None, self.header_format)
-
-        initial_row_index += 1
-        for row_index in range(initial_row_index, initial_row_index + 5):
-            self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.options)
-        
-        if self.transposed_worksheet is not None:
-            initial_col_index = 34 - 4
-            for col_index in range(initial_col_index, initial_col_index + 5):
-                self.transposed_worksheet.conditional_format(1, col_index, self.data_frame.shape[0] - 1, col_index, self.options)
+    def format(self, original_data_frame, show_reference):
+        data_frame = original_data_frame.copy()
+        return data_frame

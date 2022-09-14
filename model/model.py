@@ -9,6 +9,9 @@ from model.nvm import NVM
 from model.ders import Ders
 from model.ed15 import Ed
 
+from model.sheet.general import GeneralInfo
+from model.sheet.transposed import TransposedGeneralInfo
+
 import tests.utils.tables as utils
 import re
 
@@ -206,10 +209,14 @@ class Model:
         self.general_res_transposed = self.general_res_transposed.replace(np.nan, '')
         self.general_res_transposed = self.general_res_transposed.replace('nan', '')
         self.general_res_transposed.set_axis(self.data['фио'], inplace=True)
+
+        self.general_res_transposed_with_info = self.general_res_transposed_with_info.replace(np.nan, '')
+        self.general_res_transposed_with_info = self.general_res_transposed_with_info.replace('nan', '')
+        self.general_res_transposed_with_info.set_axis(self.data['фио'], inplace=True)
         # edeq_cols = self.general_res_transposed.iloc[:, 4:8].columns.values
         # self.general_res_transposed[edeq_cols] = self.general_res_transposed[edeq_cols].apply(lambda x: f'{x:.2f}')
 
-    def add_infor_for_ed15(self, workbook, worksheet):
+    def add_info_for_ed15(self, workbook, worksheet):
         # additional info for ED-15
         # head
         cell_format = workbook.add_format(
@@ -308,7 +315,7 @@ class Model:
         worksheet.write('P74', '2,91', cell_format)
         worksheet.write('Q74', '4,69', cell_format)
 
-    def add_additional_sheet(self, workbook, worksheet):
+    def add_additional_sheet(self, workbook):
         # additional sheet
         summary_cols = ['Ограничение питания', 'Избегание питания', 'Избегание пищи', 'Правила питания', 'Пустой желудок', 
         'Озабоченность пищей, питанием или калориями', 'Страх потери контроля над питанием', 'Питание втайне от других', 
@@ -378,8 +385,7 @@ class Model:
         worksheet.set_column(0, 0, 30, col_format)
         worksheet.set_column(1, len(summary_cols), 10, col_format)
 
-    def process(self, input_filename, output_filename, mode) -> None:
-        show_reference = mode == 0
+    def process(self, input_filename, output_filename) -> None:
         # generate data frame for quiz evaluation
         self.input_filename = input_filename
         self.original_data = utils.prepare_data_frame(self.input_filename, sheet_name=0)
@@ -393,34 +399,28 @@ class Model:
 
         # Get the xlsxwriter workbook and worksheet objects.
         workbook = self.writer.book
-        empty_frame = pd.DataFrame()
-        empty_frame.to_excel(self.writer, index=False, sheet_name='general')
-        worksheet = self.writer.sheets['general']
-        empty_frame = pd.DataFrame()
-        empty_frame.to_excel(self.writer, index=False, sheet_name='transposed')
-        worksheet_transposed = self.writer.sheets['transposed']
 
         self.quizes = {}
         # EDEQ
-        self.quizes['edeq'] = Edeq(3, 33, columns, workbook, worksheet, worksheet_transposed)
+        self.quizes['edeq'] = Edeq(3, 33, columns)
 
         # DASS
-        self.quizes['dass'] = Dass(self.quizes['edeq'].ec, 21, columns, workbook, worksheet, show_reference)
+        self.quizes['dass'] = Dass(self.quizes['edeq'].ec, 21, columns)
 
         # IES
-        self.quizes['ies'] = Ies(self.quizes['dass'].ec, 23, columns, workbook, worksheet, worksheet_transposed)
+        self.quizes['ies'] = Ies(self.quizes['dass'].ec, 23, columns)
 
         # DEBQ
-        self.quizes['debq'] = Debq(self.quizes['ies'].ec, 33, columns, workbook, worksheet, worksheet_transposed, show_reference)
+        self.quizes['debq'] = Debq(self.quizes['ies'].ec, 33, columns)
 
         # NVM
-        self.quizes['nvm'] = NVM(self.quizes['debq'].ec, 83, columns, workbook, worksheet, worksheet_transposed)
+        self.quizes['nvm'] = NVM(self.quizes['debq'].ec, 83, columns)
 
         # DERS
-        self.quizes['ders'] = Ders(self.quizes['nvm'].ec, 18, columns, workbook, worksheet, worksheet_transposed, show_reference)
+        self.quizes['ders'] = Ders(self.quizes['nvm'].ec, 18, columns)
 
         # ED-15
-        self.quizes['ed15'] = Ed(self.quizes['ders'].ec, 15, columns, workbook, worksheet, worksheet_transposed)
+        self.quizes['ed15'] = Ed(self.quizes['ders'].ec, 15, columns)
 
         # preprocess *.xlsx-file
         client_data = self.process_data_frame()
@@ -437,45 +437,36 @@ class Model:
             self.codes_to_questions[c] = question
             self.quizes['edeq'].data_frame[self.codes_to_questions[c]] = self.data[c].apply(str)
 
-        self.general_res = pd.concat([client_data] + [val.data_frame for val in self.quizes.values()], axis=1)
-        self.general_res_transposed = pd.concat([client_data] + [val.data_frame.loc[:, val.data_frame.columns[1:]] for val in self.quizes.values()], axis=1)
+        self.general_res = pd.concat([client_data] + [val.format(val.data_frame, True) for val in self.quizes.values()], axis=1)
+        self.general_res_transposed = pd.concat([client_data] + [val.format(val.data_frame, False).loc[:, val.data_frame.columns[1:]] for val in self.quizes.values()], axis=1)
+        self.general_res_transposed_with_info = pd.concat([client_data] + [val.format(val.data_frame, True).loc[:, val.data_frame.columns[1:]] for val in self.quizes.values()], axis=1)
 
         self.post_process_data()
 
         # Create a Pandas Excel writer using XlsxWriter as the engine.
+        sheets = []
         self.data.to_excel(self.writer, index=False, sheet_name='replaced')
+        
         self.general_res_transposed.reset_index(inplace=True)
-        self.general_res_transposed.to_excel(self.writer, index=False, sheet_name='transposed')
+        transposed_sheet = TransposedGeneralInfo(self.general_res_transposed, self.writer, 'transposed')
+        sheets.append(transposed_sheet)
+
+        self.general_res_transposed_with_info.reset_index(inplace=True)
+        transposed_sheet_2 = TransposedGeneralInfo(self.general_res_transposed_with_info, self.writer, 'transposed_with_text')
+        sheets.append(transposed_sheet_2)
+
         self.general_res = self.general_res.transpose()
         self.general_res.reset_index(inplace=True)
-        self.general_res.to_excel(self.writer, index=False, sheet_name='general')
-
-        # Add some cell formats.
-        format_index = workbook.add_format({'text_wrap': True})
-        format_index.set_bold(True)
-        format_index.set_align('left')
-        assert worksheet.set_column(0, 0, 50, format_index) == 0
-        assert worksheet_transposed.set_row(0, 50, format_index) == 0
-
-        # format EDEQ, IES and DEBQ
-        format_values = workbook.add_format({'num_format': '0.00'})
-        format_values.set_bold(False)
-        format_values.set_align('left')
-        assert worksheet.set_column(1, len(self.general_res.columns), 30, format_values) == 0
-        for row_index in range(1, len(self.general_res.columns)):
-            assert worksheet_transposed.set_row(row_index, 30, format_values) == 0
-
-        # format DASS, NVM and DERS
-        format_values = workbook.add_format({'num_format': '0', 'align': 'left'})
-        assert worksheet.set_row(1, None, format_values) == 0
+        general_sheet = GeneralInfo(self.general_res, self.writer, 'general')
+        sheets.append(general_sheet)
 
         # format data
-        for q in self.quizes.values():
-            q.format()
+        for s in sheets:
+            s.format(workbook)
 
-        self.add_infor_for_ed15(workbook, worksheet)
+        self.add_info_for_ed15(workbook, general_sheet.worksheet)
 
-        self.add_additional_sheet(workbook, worksheet)
+        self.add_additional_sheet(workbook)
 
         # Close the Pandas Excel writer and output the Excel file.
         self.writer.save()

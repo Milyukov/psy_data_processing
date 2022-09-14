@@ -4,5 +4,5 @@ class Controller:
         self.model = model
         self.view = view
 
-    def run(self, filename, mode):
-        self.model.process(filename, 'result.xlsx', mode)
+    def run(self, filename):
+        self.model.process(filename, 'result.xlsx')

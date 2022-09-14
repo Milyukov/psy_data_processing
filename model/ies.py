@@ -3,24 +3,8 @@ import pandas as pd
 
 class Ies(Quiz):
 
-    def __init__(self, start_col, count, columns, workbook, worksheet, transposed_worksheet=None) -> None:
-        super().__init__(start_col, count, columns, worksheet, transposed_worksheet)
-        self.header_format = workbook.add_format({'bg_color': 'yellow'})
-        outlier_format = workbook.add_format({'bg_color': '#FAA9A5', 'align': 'left'})
-        blank_format = workbook.add_format({'align': 'left', 'num_format': '0'})
-        self.blank = {
-            'type': 'blanks', 
-            'stop_if_true': True, 
-            'format': blank_format
-            }
-
-        self.options = {
-            'type': 'cell',
-            'criteria': 'not between',
-            'minimum': 2.8,
-            'maximum': 4.2,
-            'format': outlier_format
-        }
+    def __init__(self, start_col, count, columns) -> None:
+        super().__init__(start_col, count, columns)
 
     def eval(self, data):
         self.data_frame = pd.DataFrame([''] * len(data), columns=['Шкала интуитивного питания  (IES-23)'])
@@ -48,67 +32,6 @@ class Ies(Quiz):
         cols = ['ies_{}'.format(i) for i in range(1, self.count + 1)]
         self.data_frame['IES_Общий балл'] = data[cols].mean(axis=1)
 
-    def format(self):
-        row_index = 24
-        self.worksheet.set_row(row_index, None, self.header_format)
-        
-        self.options['minimum'] = 2.8
-        self.options['maximum'] = 4.2
-        row_index += 1
-        self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.blank)
-        self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.options)
-
-        self.options['minimum'] = 2.33
-        self.options['maximum'] = 4.03
-        row_index += 1
-        self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.blank)
-        self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.options)
-
-        self.options['minimum'] = 2.91
-        self.options['maximum'] = 4.23
-        row_index += 1
-        self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.blank)
-        self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.options)
-
-        self.options['minimum'] = 2.49
-        self.options['maximum'] = 4.09
-        row_index += 1
-        self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.blank)
-        self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.options)
-
-        self.options['minimum'] = 2.9
-        self.options['maximum'] = 3.86
-        row_index += 1
-        self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.blank)
-        self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.options)
-
-        if self.transposed_worksheet is not None:
-            col_index = 24 - 2            
-            self.options['minimum'] = 2.8
-            self.options['maximum'] = 4.2
-            self.transposed_worksheet.conditional_format(1, col_index, self.data_frame.shape[0] - 1, col_index, self.blank)
-            self.transposed_worksheet.conditional_format(1, col_index, self.data_frame.shape[0] - 1, col_index, self.options)
-
-            self.options['minimum'] = 2.33
-            self.options['maximum'] = 4.03
-            col_index += 1
-            self.transposed_worksheet.conditional_format(1, col_index, self.data_frame.shape[0] - 1, col_index, self.blank)
-            self.transposed_worksheet.conditional_format(1, col_index, self.data_frame.shape[0] - 1, col_index, self.options)
-
-            self.options['minimum'] = 2.91
-            self.options['maximum'] = 4.23
-            col_index += 1
-            self.transposed_worksheet.conditional_format(1, col_index, self.data_frame.shape[0] - 1, col_index, self.blank)
-            self.transposed_worksheet.conditional_format(1, col_index, self.data_frame.shape[0] - 1, col_index, self.options)
-
-            self.options['minimum'] = 2.49
-            self.options['maximum'] = 4.09
-            col_index += 1
-            self.transposed_worksheet.conditional_format(1, col_index, self.data_frame.shape[0] - 1, col_index, self.blank)
-            self.transposed_worksheet.conditional_format(1, col_index, self.data_frame.shape[0] - 1, col_index, self.options)
-
-            self.options['minimum'] = 2.9
-            self.options['maximum'] = 3.86
-            col_index += 1
-            self.transposed_worksheet.conditional_format(1, col_index, self.data_frame.shape[0] - 1, col_index, self.blank)
-            self.transposed_worksheet.conditional_format(1, col_index, self.data_frame.shape[0] - 1, col_index, self.options)
+    def format(self, original_data_frame, show_reference):
+        data_frame = original_data_frame.copy()
+        return data_frame

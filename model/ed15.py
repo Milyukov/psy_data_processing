@@ -1,16 +1,12 @@
+from errno import EREMOTE
 from model.quiz import Quiz
 import pandas as pd
 import numpy as np
 
 class Ed(Quiz):
 
-    def __init__(self, start_col, count, columns, workbook, worksheet, transposed_worksheet=None) -> None:
-        super().__init__(start_col, count, columns, worksheet, transposed_worksheet)
-        self.header_format = workbook.add_format({'bg_color': 'yellow'})
-        outlier_format = workbook.add_format({'bg_color': '#FAA9A5', 'align': 'left'})
-        self.options = {
-            'format': outlier_format
-            }
+    def __init__(self, start_col, count, columns) -> None:
+        super().__init__(start_col, count, columns)
 
         self.replace_answers_dict = {
             'никогда': 0,
@@ -33,29 +29,23 @@ class Ed(Quiz):
         self.data_frame = pd.DataFrame([''] * len(data), columns=['ED-15'])
 
 
-        scale_name = 'Озабоченность весом и формой тела '
+        scale_name = 'Озабоченность весом и формой тела'
         cols = ['ED15_2', 'ED15_4', 'ED15_5', 'ED15_6', 'ED15_9', 'ED15_10']
         for i, col in enumerate(cols):
             cols[i] = col.lower()
         self.data_frame[scale_name] = data[cols].replace('', 0).mean(axis=1)
-        self.data_frame[scale_name] = self.data_frame[scale_name].apply(
-            lambda x: '{:.2f}'.format(x) if not np.isnan(x) else '')
 
-        scale_name = 'Озабоченность питанием '
+        scale_name = 'Озабоченность питанием'
         cols = ['ED15_1', 'ED15_3', 'ED15_7', 'ED15_8']
         for i, col in enumerate(cols):
             cols[i] = col.lower()
         self.data_frame[scale_name] = data[cols].replace('', 0).mean(axis=1)
-        self.data_frame[scale_name] = self.data_frame[scale_name].apply(
-            lambda x: '{:.2f}'.format(x) if not np.isnan(x) else '')
 
         scale_name = 'Общий балл'
         cols = ['ED15_1', 'ED15_2', 'ED15_3', 'ED15_4', 'ED15_5', 'ED15_6', 'ED15_7', 'ED15_8', 'ED15_9', 'ED15_10']
         for i, col in enumerate(cols):
             cols[i] = col.lower()
         self.data_frame[scale_name] = data[cols].replace('', 0).mean(axis=1)
-        self.data_frame[scale_name] = self.data_frame[scale_name].apply(
-            lambda x: '{:.2f}'.format(x) if not np.isnan(x) else '')
 
         replace_answers_dict_ed15_back = {val: key for (key, val) in self.replace_answers_dict.items()}
 
@@ -79,15 +69,8 @@ class Ed(Quiz):
             self.codes_to_questions[c] = question
             self.data_frame[self.codes_to_questions[c]] = data[c].apply(lambda x: format_ed15_cell(x, index))
 
-    def format(self):
-        initial_row_index = 48
-        self.worksheet.set_row(initial_row_index, None, self.header_format)
-
-        initial_row_index += 1
-        for row_index in range(initial_row_index, initial_row_index + 3):
-            self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.options)
-
-        if self.transposed_worksheet is not None:
-            initial_col_index = 48 - 6
-            for col_index in range(initial_col_index, initial_col_index + 3):
-                self.transposed_worksheet.conditional_format(1, col_index, self.data_frame.shape[0] - 1, col_index, self.options)
+    def format(self, original_data_frame, show_reference):
+        data_frame = original_data_frame.copy()
+        for scale_name in ['Озабоченность весом и формой тела', 'Озабоченность питанием', 'Общий балл']:
+            data_frame[scale_name] = data_frame[scale_name].apply(lambda x: '{:.2f}'.format(x) if not np.isnan(x) else '')
+        return data_frame

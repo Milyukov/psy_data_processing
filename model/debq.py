@@ -4,23 +4,12 @@ import numpy as np
 
 class Debq(Quiz):
 
-    def __init__(self, start_col, count, columns, workbook, worksheet, transposed_worksheet=None, show_reference=True) -> None:
-        super().__init__(start_col, count, columns, worksheet, transposed_worksheet)
-        self.header_format = workbook.add_format({'bg_color': 'yellow'})
-        outlier_format = workbook.add_format({'align': 'left'})
-        self.options = {
-            'format': outlier_format
-            }
-        self.show_reference = show_reference
+    def __init__(self, start_col, count, columns) -> None:
+        super().__init__(start_col, count, columns)
 
     def eval(self, data):
 
-        def format_answer(x, suffix):
-            if np.isnan(x):
-                return ''
-            if self.show_reference:
-                return f'{x:.2f} {suffix}'
-            return f'{x:.2f}'
+        
         
         self.data_frame = pd.DataFrame([''] * len(data), columns=['Опросник стиля пищевого поведения / Голладский пищевой опросник (DEBQ)'])
         scale_name = 'Ограничительный'
@@ -28,31 +17,34 @@ class Debq(Quiz):
         for i, col in enumerate(cols):
             cols[i] = col.lower()
         self.data_frame[scale_name] = data[cols].replace('', 0).mean(axis=1)
-        self.data_frame[scale_name] = self.data_frame[scale_name].apply(lambda x: format_answer(x, '(норма: 2.4)'))
+        
 
         scale_name = 'Эмоциональный'
         cols = ['DEBQ_11', 'DEBQ_12', 'DEBQ_13', 'DEBQ_14', 'DEBQ_15', 'DEBQ_16', 'DEBQ_17', 'DEBQ_18', 'DEBQ_19', 'DEBQ_20', 'DEBQ_21', 'DEBQ_22', 'DEBQ_23']
         for i, col in enumerate(cols):
             cols[i] = col.lower()
         self.data_frame[scale_name] = data[cols].replace('', 0).mean(axis=1)
-        self.data_frame[scale_name] = self.data_frame[scale_name].apply(lambda x: format_answer(x, '(норма: 1.8)'))
 
         scale_name = 'Экстернальный'
         cols = ['DEBQ_24', 'DEBQ_25', 'DEBQ_26', 'DEBQ_27', 'DEBQ_28', 'DEBQ_29', 'DEBQ_30', 'DEBQ_31', 'DEBQ_32', 'DEBQ_33']
         for i, col in enumerate(cols):
             cols[i] = col.lower()
         self.data_frame[scale_name] = data[cols].replace('', 0).mean(axis=1)
-        self.data_frame[scale_name] = self.data_frame[scale_name].apply(lambda x: format_answer(x, '(норма: 2.7)'))
 
-    def format(self):
-        initial_row_index = 30
-        self.worksheet.set_row(initial_row_index, None, self.header_format)
+    def format(self, original_data_frame, show_reference):
+        data_frame = original_data_frame.copy()
+        
+        def format_answer(x, suffix):
+            if np.isnan(x):
+                return ''
+            if show_reference:
+                return f'{x:.2f} {suffix}'
+            return f'{x:.2f}'
 
-        initial_row_index += 1
-        for row_index in range(initial_row_index, initial_row_index + 3):
-            self.worksheet.conditional_format(row_index, 1, row_index, self.data_frame.shape[0] - 1, self.options)
-
-        if self.transposed_worksheet is not None:
-            initial_col_index = 30 - 3
-            for col_index in range(initial_col_index, initial_col_index + 3):
-                self.transposed_worksheet.conditional_format(1, col_index, self.data_frame.shape[0] - 1, col_index, self.options)
+        scale_name = 'Ограничительный'
+        data_frame[scale_name] = data_frame[scale_name].apply(lambda x: format_answer(x, '(норма: 2.4)'))
+        scale_name = 'Эмоциональный'
+        data_frame[scale_name] = data_frame[scale_name].apply(lambda x: format_answer(x, '(норма: 1.8)'))
+        scale_name = 'Экстернальный'
+        data_frame[scale_name] = data_frame[scale_name].apply(lambda x: format_answer(x, '(норма: 2.7)'))
+        return data_frame
