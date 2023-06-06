@@ -1,0 +1,18 @@
+- name: "Patrick"
+  questions:
+    number: 5
+    start_index: "A"
+    inverse_range: "B,C,D" # indexes start with 0
+  answers:
+    "никогда": 1
+    "редко": 2
+    "иногда": 3
+    "часто": 4
+    "всегда": 5
+  scales:
+    - name: "Scale 1"
+      range: "A,C,E"
+      method: "avg"
+    - name: "Scale 2"
+      range: "B,D"
+      method: "sum"
