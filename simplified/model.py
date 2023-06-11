@@ -52,7 +52,7 @@ class Model:
     def process(input_path, output_path, config_path):
         results = {}
         config = None
-        with open(config_path, "r") as stream:
+        with open(config_path, "r", encoding="utf8") as stream:
             try:
                 config = yaml.safe_load(stream)
             except yaml.YAMLError as exc:
