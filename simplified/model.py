@@ -79,6 +79,7 @@ class Model:
     
 
         for quiz_config in config:
+            print(f'Processing {quiz_config["name"]}')
             # get quiz name
             quize_name = quiz_config["name"]
             # read corresponding sheet
