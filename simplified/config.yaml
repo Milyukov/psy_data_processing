@@ -2,7 +2,7 @@
   questions:
     number: 5
     start_index: "A"
-    inverse_range: "B,C,D" # indexes start with 0
+    inverse_range: "1,2,3" # indexes start with 0
   answers:
     "никогда": 1
     "редко": 2
@@ -11,8 +11,8 @@
     "всегда": 5
   scales:
     - name: "Scale 1"
-      range: "A,C,E"
+      range: "1,3,5"
       method: "avg"
     - name: "Scale 2"
-      range: "B,D"
+      range: "2,4"
       method: "sum"
