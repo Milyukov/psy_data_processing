@@ -32,5 +32,5 @@ Executable can be found in
 
 ## Server
 ```sh
-fastapi run serve.py
+uvicorn serve:app --reload
 ```
